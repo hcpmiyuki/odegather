@@ -13,7 +13,7 @@
       </ul>
     </div>
     <div class='form'>
-      <input type='text' name='placeName' placeholder='リスト名' autocomplete='off' v-model='listName'>
+      <input type='text' name='placeName' placeholder='リスト名(必須)' autocomplete='off' v-model='listName'>
       <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='listDescription'></textarea>
       <p v-on:click='registerNewList'>登録</p>
     </div>
@@ -52,20 +52,23 @@ export default {
   },
   methods: {
     getLists: async function (UID) {
+      var lists = []
       var userDocs = await db.collection('users').doc(UID).get()
-      var listDocs = await userDocs.ref.collection('lists').orderBy('created_at', 'desc').get()
+      var listDocs = await userDocs.ref.collection('lists').orderBy('createdAt', 'desc').get()
       listDocs.forEach((doc) => {
-        this.lists.push({'name': doc.data().name, 'description': doc.data().description, 'id': doc.id})
+        lists.push({'name': doc.data().name, 'description': doc.data().description, 'id': doc.id})
       })
+      this.lists = lists
     },
     registerNewList: function () {
       const self = this
       if (self.listName && self.listDescription) {
         var newListRef = db.collection('users').doc(self.currentUserUID).collection('lists').doc();
         newListRef.set({
+          documentID: newListRef.id,
           name: self.listName,
           description: self.listDescription,
-          created_at: new Date()
+          createdAt: new Date()
         })
         .then(function () {
           self.$router.push({ path: `/places/${newListRef.id}` })
@@ -78,11 +81,10 @@ export default {
       }
     },
     deleteList: function (listID) {
-      console.log('押してはいる')
       const self = this
       db.collection('users').doc(self.currentUserUID).collection('lists').doc(listID).delete()
         .then(function() {
-          self.$router.go({path: self.$router.currentRoute.path, force: true})
+          self.getLists(self.pageUID)
         })
         .catch(function(error) {
           console.error(error);
