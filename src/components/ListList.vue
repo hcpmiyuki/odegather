@@ -15,7 +15,7 @@
     <div class='form'>
       <input type='text' name='placeName' placeholder='リスト名(必須)' autocomplete='off' v-model='listName'>
       <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='listDescription'></textarea>
-      <p v-on:click='registerNewList'>登録</p>
+      <p v-on:click='addNewList'>登録</p>
     </div>
   </div>
 </template>
@@ -60,7 +60,7 @@ export default {
       })
       this.lists = lists
     },
-    registerNewList: function () {
+    addNewList: function () {
       const self = this
       if (self.listName && self.listDescription) {
         var newListRef = db.collection('users').doc(self.currentUserUID).collection('lists').doc();
@@ -71,7 +71,7 @@ export default {
           createdAt: new Date()
         })
         .then(function () {
-          self.$router.push({ path: `/places/${newListRef.id}` })
+          self.getLists(self.pageUID)
         })
         .catch((error) => {
           console.error(error);

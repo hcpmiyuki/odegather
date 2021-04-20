@@ -6,7 +6,9 @@
     <div class='places'>
       <ul>
         <li v-for='(place, index) in places' :key='index'>
-        {{ place.name }}
+          <p>{{ place.name }}</p>
+          <p>{{ place.description }}</p>
+          <p v-on:click='deletePlace(place.placeID)'>削除</p>
         </li>
       </ul>
     </div>
@@ -14,7 +16,7 @@
       <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search">
       <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='placeData.description'></textarea>
       <input type="text" name="url" placeholder="Google MapやホームページのURL(任意)" id="url" v-model='placeData.url'>
-      <p>登録</p>
+      <p v-on:click='addNewPlace'>登録</p>
       {{ placeData }}
     </div>
   </div>
@@ -28,6 +30,7 @@ export default {
   name: 'PlaceList',
   data () {
     return {
+      listDocPath: null,
       listID: null,
       currentUserUID: null,
       placeData: {
@@ -63,8 +66,6 @@ export default {
       let autocomplete = new window.google.maps.places.Autocomplete(this.$refs.search, options);
       autocomplete.addListener("place_changed", function() {
         var place = autocomplete.getPlace()
-        console.log(place)
-        console.log(place.place_id)
         self.placeData.name = place.name
         self.placeData.photoUrl = place.photos[0].getUrl()
         self.placeData.types = place.types.filter(n => !["point_of_interest", "establishment"].includes(n));
@@ -88,21 +89,22 @@ export default {
     })
   },
   methods: {
-    getPlaces: async function (UID, listID) {
+    getPlaces: async function () {
       const self = this
       var listDocs = await db.collectionGroup('lists').where('documentID', '==', self.listID)
         .orderBy('createdAt', 'desc')
         .get()
 
       listDocs.forEach(async function (doc) {
+        self.listDocPath = doc.ref.path
+
         var placesDocs = await doc.ref.collection('places').orderBy('createdAt', 'desc').get()
-        self.$set(self.listData, 'documentID', doc.data().documentID);
-        // self.listData['documentID'] = doc.data().documentID
+        self.listData['documentID'] = doc.data().documentID
         self.listData['name'] = doc.data().name
         self.listData['createdAt'] = doc.data().createdAt
-
+        var places = []
         placesDocs.forEach(function (doc) {
-          self.places.push({
+          places.push({
             'placeID': doc.data().placeID,
             'description': doc.data().description,
             'createdAt': doc.data().createdAt,
@@ -112,8 +114,32 @@ export default {
             'url': doc.data().url
           })
         })
+        self.places = places
       })
     },
+    addNewPlace: async function () {
+      const self = this
+      self.placeData.createdAt = new Date()
+
+      db.doc(self.listDocPath).collection('places').doc(self.placeData.placeID)
+        .set(self.placeData)
+        .then(function() {
+          self.getPlaces()
+        })
+        .catch(function(error) {
+          console.error(error);
+        })
+    },
+    deletePlace: function (placeID) {
+      const self = this
+      db.doc(self.listDocPath).collection('places').doc(placeID).delete()
+        .then(function() {
+          self.getPlaces()
+        })
+        .catch(function(error) {
+          console.error(error);
+      });
+    }
 
   }
 }
