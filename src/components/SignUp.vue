@@ -5,8 +5,8 @@
           <input type='email' name='email' v-model='email'>
           <label>パスワード</label>
           <input type='password' name='password' v-model='password'>
-          <p v-on:click='signUp'>サインアップ</p>
-          <router-link to="/">サインイン</router-link>
+          <p v-on:click='signUp' class='btn'>サインアップ</p>
+          <p>アカウントをお持ちの方は<router-link to="/">こちら</router-link></p>
       </div>
   </div>
 </template>
@@ -28,10 +28,10 @@ export default {
       firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
         .then((res) => {
           db.collection('users').doc(res.user.uid).set({
-            screen_name: null,
-            image_name: null,
+            screenName: null,
+            imageName: null,
             description: null,
-            created_at: new Date()
+            createdAt: new Date()
           })
             .then(
               this.$router.push({ path: `/userinfo/${res.user.uid}` })

@@ -5,8 +5,8 @@
           <input type='email' name='email' v-model='email'>
           <label>パスワード</label>
           <input type='password' name='password' v-model='password'>
-          <p v-on:click='signIn'>サインイン</p>
-          <router-link to="/signup">サインアップ</router-link>
+          <p v-on:click='signIn' class='btn'>サインイン</p>
+          <p>アカウントをお持ちでない方は<router-link to="/signup">こちら</router-link></p>
       </div>
   </div>
 </template>

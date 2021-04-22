@@ -1,0 +1,112 @@
+:root {
+    --base-color: rgb(255, 121, 68);
+    --main-color: white;
+    --accent-color:rgb(32, 178, 170);
+}
+
+*{
+    padding: 0;
+    margin: 0;
+    font-family: "Hiragino Sans","Hiragino Kaku Gothic Pro",meiryo,"Helvetica Neue",roboto,droid sans,arial,sans-serif;;
+}
+
+.btn{
+    cursor: pointer;
+}
+
+a{
+    text-decoration: none;
+}
+
+body,html{
+    background-color: var(--base-color);
+}
+
+.wrapper{
+    padding: 10px 5%;
+}
+
+/* form */
+.form{
+    width: 95%;
+    margin: 50px auto 30px auto;
+    
+}
+
+.form input,.form textarea{
+    display: block;
+    width: 100%;
+    font-size: 16px;
+    padding: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 1px 1px 2px grey;
+    border: solid 0px;
+}
+
+.form label{
+    display: inline-block;
+}
+
+.btn{
+    display: block;
+    width: 150px;
+    background-color: var(--accent-color);
+    color: var(--main-color);
+    font-size: larger;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 1px 1px 2px grey;
+    margin: 10px auto;
+    text-align: center;
+}
+
+.follow{
+    width: 90px;
+    font-size: smaller;
+}
+
+.form label{
+    color: var(--main-color)
+}
+
+.form p{
+    text-align: center;
+}
+
+/* リスト */
+
+.list{
+    width: 95%;
+    margin: 20px auto;  
+}
+
+.list li{
+    list-style: none;
+    background-color: var(--main-color);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 10px 10px 30px 10px;
+    box-shadow: 1px 1px 2px grey;
+    position: relative; 
+}
+
+/* メニュー固定 */
+#menu{
+    width: 100%;
+    height: 50px;
+    background-color: var(--main-color);
+    position: fixed;
+    bottom: 0;
+    z-index:999;
+    border-top: lightgray solid 1px;
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+}
+
+#menu li{
+    text-align: center;
+    display: block;
+    font-size: 30px;
+}

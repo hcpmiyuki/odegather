@@ -1,30 +1,33 @@
 <template>
   <div>
-    <div class='title-header'>
-      <h1>{{ listData.name }}</h1>
+    <div class="wrapper">
+      <div class='title-header'>
+        <h1>{{ listData.name }}</h1>
+      </div>
+      <div class='list'>
+        <ul>
+          <li v-for='(place, index) in places' :key='index'>
+            <p>{{ place.name }}</p>
+            <p>{{ place.description }}</p>
+            <p v-on:click='deletePlace(place.placeID)'>削除</p>
+          </li>
+        </ul>
+      </div>
+      <div class='form'>
+        <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search">
+        <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='placeData.description'></textarea>
+        <input type="text" name="url" placeholder="Google MapやホームページのURL(任意)" id="url" v-model='placeData.url'>
+        <p v-on:click='addNewPlace' class='btn'>登録</p>
+      </div>
     </div>
-    <div class='places'>
-      <ul>
-        <li v-for='(place, index) in places' :key='index'>
-          <p>{{ place.name }}</p>
-          <p>{{ place.description }}</p>
-          <p v-on:click='deletePlace(place.placeID)'>削除</p>
-        </li>
-      </ul>
-    </div>
-    <div class='form'>
-      <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search">
-      <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='placeData.description'></textarea>
-      <input type="text" name="url" placeholder="Google MapやホームページのURL(任意)" id="url" v-model='placeData.url'>
-      <p v-on:click='addNewPlace'>登録</p>
-      {{ placeData }}
-    </div>
+    <HeaderMenu v-bind:currentUserUID='currentUserUID'></HeaderMenu>
   </div>
 </template>
 
 <script>
 import firebase from 'firebase'
 import {db} from '../plugins/firebase'
+import HeaderMenu from './HeaderMenu'
 
 export default {
   name: 'PlaceList',
@@ -49,6 +52,9 @@ export default {
         'createdAt': null
       }
     }
+  },
+  components: {
+    HeaderMenu
   },
   mounted: function () {
     const self = this
@@ -125,6 +131,13 @@ export default {
         .set(self.placeData)
         .then(function() {
           self.getPlaces()
+
+          // フォームを初期化する
+          let placeDataTemp = {}
+          for (let key in self.placeData) {
+            placeDataTemp[key] = null
+          }
+          self.placeData = placeDataTemp
         })
         .catch(function(error) {
           console.error(error);

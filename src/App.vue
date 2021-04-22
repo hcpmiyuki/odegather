@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <!-- <p v-on:click='backPage'> << もどる</p> -->
     <!-- <img src="./assets/logo.png"> -->
     <router-view/>
   </div>
@@ -7,7 +8,12 @@
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  methods: {
+    backPage: function () {
+      this.$router.back()
+    }
+  }
 }
 </script>
 
@@ -20,4 +26,6 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 } */
+
+@import "./css/styles.css";
 </style>
