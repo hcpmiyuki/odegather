@@ -2,22 +2,55 @@
     <div>
       <div class='wrapper'>
         <div id='user-container'>
-          <div id='mypage-menu'></div>
+          <div id='mypage-menu'>
+            <ul id='mypage-menu-list'>
+            <li><i class="fas fa-bell"></i></li>
+            <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>
+            <li><i class="fas fa-cog"></i></li>
+            </ul>
+          </div>
           <div id='user-header-image'>
             <div class="trim">
-              <img src="../assets/default-icon.jpg">
+              <img :src="pageUserData.imageName">
             </div>
           </div>
           <div id='user-header-info'>
-            <p>{{userData.screenName}}</p>
-            <a>{{userData.followsCount}}フォロー</a>　<a>{{userData.followersCount}}フォロワー</a>
-            <p v-if="pageUID!==currentUserUID" class='btn follow' v-on:click='followUser'>フォローする</p>            
+            <p>{{pageUserData.screenName}}</p>
+            <a>
+              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: '1'}}">
+                {{pageUserData.followsCount}}
+              </router-link>
+              フォロー
+            </a>
+            <a>
+              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: '0'}}">
+                {{pageUserData.followersCount}}
+              </router-link>
+              フォロワー
+            </a>
+            <p v-if="followBtnShow" class='btn follow' v-on:click='followUser'>フォローする</p>
+            <p v-if="unFollowBtnShow" class='btn follow' v-on:click='unFollowUser'>フォローをやめる</p>            
           </div>
-          <div id='user-description'></div>
+          <div id='user-description'>
+            <p>{{pageUserData.description}}</p>
+          </div>
           <div id='user-content'>
-            <p>{{userData.screenName}}さんの<router-link :to="{ name: 'ListList', params: { uid: pageUID }}">リスト</router-link>を見る</p>
+            <p>{{pageUserData.screenName}}さんの<router-link :to="{ name: 'ListList', params: { uid: pageUserData.userID }}">リスト</router-link>を見る</p>
           </div>
         </div>
+        <UserInfoEdit
+        v-if="showUserInfoEditModal"
+        @close="showUserInfoEditModal = false"
+        :userID="currentUserData.userID"
+        :screenName="currentUserData.screenName"
+        :imageName="currentUserData.imageName"
+        :description="currentUserData.description">
+          <!--
+        you can use custom content here to overwrite
+        default content
+      -->
+          <h3 slot="header">custom header</h3>
+        </UserInfoEdit>
       </div>
     <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
     </div>
@@ -29,61 +62,168 @@
 import {db} from '../plugins/firebase'
 import firebase from 'firebase'
 import HeaderMenu from './HeaderMenu'
+import UserInfoEdit from './UserInfoEdit'
 
 export default {
   name: 'UserInfo',
   data () {
     return {
       pageUID: null,
-      userData: {
+      currentUserUID: null,
+      pageUserData: {
+        'userID': null,
         'description': null,
         'imageName': null,
-        'screenName': null,
-        'followsCount': null,
-        'followersCount': null
+        'follows': [],
+        'followsCount':null,
+        'followersCount':null,
+        'followers': [],
+        'screenName': null
       },
-      currentUserUID: null
+      currentUserData: {
+        'userID': null,
+        'description': null,
+        'imageName': null,
+        'follows': [],
+        'followsCount':null,
+        'followersCount':null,
+        'followers': [],
+        'screenName': null
+      },
+      followBtnShow: false,
+      unFollowBtnShow: false,
+      showUserInfoEditModal: false
     }
   },
   components: {
-    HeaderMenu
+    HeaderMenu,
+    UserInfoEdit
   },
-  created: function () {
+  created: async function () {
     const self = this
-    self.pageUID = this.$route.params.uid
+    self.pageUID = self.$route.params.uid
+    self.pageUserData = await self.getUserData(self.pageUID)
 
-    firebase.auth().onAuthStateChanged(function (user) {
+    await firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
         // User is signed in.
         self.currentUserUID = user.uid
-        self.userData.description = user.description
-        self.userData.imageName = user.imageName
-        self.userData.followsCount = 1
-        self.userData.followersCount = 1
-
-        if (user.screenName) {
-          self.userData.screenName = user.screenName
-        } else {
-          self.userData.screenName = '名無し'
-        }
-        
       } else {
         // No user is signed in.
         console.log('ログインしていない')
       }
     })
+
+    self.currentUserData = await self.getUserData(self.currentUserUID)
+
+    if (self.pageUID && self.currentUserUID　&& !self.currentUserData.follows.includes(self.pageUID) && self.pageUID !== self.currentUserUID) {
+      self.followBtnShow = true
+    } else if (self.pageUID !== self.currentUserUID){
+      self.unFollowBtnShow = true
+    }
   },
   methods: {
-    firebaseTest: async function () {
-      var userDocs = await db.collection('users').doc(this.UID).get()
-      var listDocs = await userDocs.ref.collection('lists').get()
-      // console.log(listDocs.map(x => x.data()))
-      listDocs.forEach((doc) => {
-        console.log(doc.data())
-      })
+    followUser: async function () {
+      const self = this
+      let currentUserDocRef = await db.collection('users').doc(self.currentUserUID)
+      let followDocRef = await currentUserDocRef.collection('follows').doc(self.pageUID)
+      let followUserData = {
+        'userID': self.pageUserData['userID'],
+        'imageName': self.pageUserData['imageName'],
+        'screenName': self.pageUserData['screenName'],
+        'createdAt': new Date()
+      }
+
+      let pageUserDocRef = await db.collection('users').doc(self.pageUID)
+      let followerDocRef = await pageUserDocRef.collection('followers').doc(self.currentUserUID)
+      let followerUserData = {
+        'userID': self.currentUserData['userID'],
+        'imageName': self.currentUserData['imageName'],
+        'screenName': self.currentUserData['screenName'],
+        'createdAt': new Date()
+      }
+
+      try {
+        const batch = db.batch()
+
+        await batch.set(followDocRef, followUserData)
+
+        await batch.set(followerDocRef, followerUserData)
+        
+        self.followBtnShow = false
+        self.unFollowBtnShow = true
+        self.pageUserData = await self.getUserData(self.pageUID)
+        self.pageUserData['followersCount'] += 1
+        await batch.commit()
+      } catch (error) {
+        console.error(error);
+      }
     },
-    followUser: function () {
-      console.log('フォロー')
+    unFollowUser: async function () {
+      const self = this
+      let currentUserDocRef = await db.collection('users').doc(self.currentUserUID)
+      let followDocRef = await currentUserDocRef.collection('follows').doc(self.pageUID)
+
+      let pageUserDocRef = await db.collection('users').doc(self.pageUID)
+      let followerDocRef = await pageUserDocRef.collection('followers').doc(self.currentUserUID)
+
+      try {
+        const batch = db.batch()
+
+        await batch.delete(followDocRef)
+
+        await batch.delete(followerDocRef)
+        
+        self.followBtnShow = true
+        self.unFollowBtnShow = false
+        self.pageUserData['followersCount'] -= 1
+        await batch.commit()
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    getUserData: async function (UID) {
+      const self = this
+      let userDoc = await db.collection('users').doc(UID).get()
+      let follows = await self.getFollows(UID)
+      let followers = await self.getFollowers(UID)
+      let userData = {
+        'userID': userDoc.id,
+        'description': userDoc.data().description,
+        'imageName': userDoc.data().imageName,
+        'follows': follows,
+        'followsCount': follows.length,
+        'followers': followers,
+        'followersCount': followers.length,
+      }
+
+      if (userDoc.data().screenName) {
+        userData['screenName'] = userDoc.data().screenName
+      } else {
+        userData['screenName'] = '名無し'
+      }
+
+      return userData
+    },
+    getFollows: async function (UID) {
+      const self = this
+      var userDocRef = db.collection('users').doc(UID)
+      var followDocs = await userDocRef.collection('follows').get()
+      let follows = []
+      followDocs.forEach(function (doc) {
+        follows.push(doc.id)
+      })
+      return follows
+    },
+    getFollowers: async function (UID) {
+      const self = this
+      var userDocRef = db.collection('users').doc(UID)
+      var followerDocs = await userDocRef.collection('followers').get()
+      let followers = []
+      followerDocs.forEach(function (doc) {
+        followers.push(doc.id)
+      })
+      return followers
     }
   }
 }
@@ -92,7 +232,7 @@ export default {
 <style>
 #user-container{
   display: grid;
-  grid-template-rows: 30px 150px 150px 1fr;
+  grid-template-rows: 30px 150px 100px 1fr;
   grid-template-columns: 34% 33% 33%;
 }
 
@@ -158,4 +298,18 @@ export default {
   height:100%;
 }
 
+/* マイページのヘッダーメニュー */
+#mypage-menu-list{
+    width: 40%;
+    float: right;
+    /* height: 50px; */
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+}
+
+#mypage-menu-list li{
+    text-align: center;
+    display: block;
+    font-size: 21px;
+}
 </style>

@@ -5,13 +5,14 @@
         <h1>{{ listData.name }}</h1>
       </div>
       <div class='list'>
-        <ul>
+        <ul v-if='places.length'>
           <li v-for='(place, index) in places' :key='index'>
-            <p>{{ place.name }}</p>
+            <a>{{ place.name }}</a>
             <p>{{ place.description }}</p>
-            <p v-on:click='deletePlace(place.placeID)'>削除</p>
+            <a v-on:click='deletePlace(place.placeID)'>削除</a>
           </li>
         </ul>
+        <p v-else>まだ場所が登録されていません!登録してください!</p>
       </div>
       <div class='form'>
         <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search">

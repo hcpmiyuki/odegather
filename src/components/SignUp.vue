@@ -28,8 +28,8 @@ export default {
       firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
         .then((res) => {
           db.collection('users').doc(res.user.uid).set({
-            screenName: null,
-            imageName: null,
+            screenName: '名無し',
+            imageName: 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e',
             description: null,
             createdAt: new Date()
           })

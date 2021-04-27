@@ -5,13 +5,14 @@
         <h1>{{ pageUserName }}のリスト</h1>
       </div>
       <div class='list'>
-        <ul>
+        <ul v-if='lists.length'>
           <li v-for='(list, index) in lists' :key='index'>
           <p><router-link :to="{ name: 'PlaceList', params: { listID: list.id }}">{{ list.name }}</router-link></p>
           <p>{{ list.description }}</p>
-          <p v-on:click='deleteList(list.id)'>削除</p>
+          <a v-on:click='deleteList(list.id)'>削除</a>
           </li>
         </ul>
+        <p v-else>まだリストが作成されていません!作成してください!</p>
       </div>
       <div class='form'>
         <input type='text' name='placeName' placeholder='リスト名(必須)' autocomplete='off' v-model='listName'>

@@ -5,6 +5,7 @@ import SignUp from '@/components/SignUp'
 import UserInfo from '@/components/UserInfo'
 import ListList from '@/components/ListList'
 import PlaceList from '@/components/PlaceList'
+import FollowList from '@/components/FollowList'
 
 Vue.use(Router)
 
@@ -32,6 +33,11 @@ export default new Router({
       path: '/places/:listID',
       name: 'PlaceList',
       component: PlaceList
+    },
+    {
+      path: '/follows/:uid/:follow_flag',
+      name: 'FollowList',
+      component: FollowList
     }
   ]
 })
