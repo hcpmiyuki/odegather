@@ -45,11 +45,6 @@
         :screenName="currentUserData.screenName"
         :imageName="currentUserData.imageName"
         :description="currentUserData.description">
-          <!--
-        you can use custom content here to overwrite
-        default content
-      -->
-          <h3 slot="header">custom header</h3>
         </UserInfoEdit>
       </div>
     <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>

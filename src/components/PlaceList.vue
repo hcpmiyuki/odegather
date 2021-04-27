@@ -4,12 +4,22 @@
       <div class='title-header'>
         <h1>{{ listData.name }}</h1>
       </div>
-      <div class='list'>
+      <div class='list place'>
         <ul v-if='places.length'>
           <li v-for='(place, index) in places' :key='index'>
-            <a>{{ place.name }}</a>
-            <p>{{ place.description }}</p>
-            <a v-on:click='deletePlace(place.placeID)'>削除</a>
+            <div id='palce-list-title'>
+              <a>{{ place.name }}</a>
+            </div>
+            <div id='place-list-image'>
+              <img :src='place.photoUrl'>
+            </div>
+            <div id='place-list-content'>
+              <p>{{ place.types }}</p>
+              <p>{{ place.description }}</p>
+              <a :href='place.url' target="_brank">googlemapでみる</a>
+              <p>{{ place.listedCount }}人がこの場所をリストに登録しています</p>
+              <a v-on:click='deletePlace(place.placeID)'>削除</a>
+            </div>
           </li>
         </ul>
         <p v-else>まだ場所が登録されていません!登録してください!</p>
@@ -47,11 +57,13 @@ export default {
         'url': null
       },
       places: [],
+      propsPlaceData: null,
       listData: {
         'documentID': null,
         'name': null,
         'createdAt': null
-      }
+      },
+      showModalFlag: false
     }
   },
   components: {
@@ -110,7 +122,9 @@ export default {
         self.listData['name'] = doc.data().name
         self.listData['createdAt'] = doc.data().createdAt
         var places = []
-        placesDocs.forEach(function (doc) {
+        placesDocs.forEach(async function (doc) {
+          var placeDocRefs = await db.collectionGroup('places').where('placeID', '==', doc.id).get()
+
           places.push({
             'placeID': doc.data().placeID,
             'description': doc.data().description,
@@ -118,7 +132,8 @@ export default {
             'name': doc.data().name,
             'photoUrl': doc.data().photoUrl,
             'types': doc.data().types,
-            'url': doc.data().url
+            'url': doc.data().url,
+            'listedCount': placeDocRefs.size
           })
         })
         self.places = places
@@ -154,10 +169,29 @@ export default {
           console.error(error);
       });
     }
-
   }
 }
 </script>
 
 <style scoped>
+
+.list.place li{
+  display: grid;
+  grid-template-rows: 30px 1fr;
+  grid-template-columns: 33% 1fr;
+}
+
+#palce-list-title{
+  grid-row: 1;
+  grid-column: 1 / 3;
+}
+
+#place-list-image{
+  width: 100%;
+}
+
+img{
+  width: 90%;
+}
+
 </style>
