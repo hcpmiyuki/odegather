@@ -6,9 +6,12 @@ import router from './router'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import './plugins/firebase'
+import globalMethods from './utils/global'
 
 Vue.config.productionTip = false
 Vue.use(VueAxios, axios)
+// グローバルメソッドのグローバルミックスイン
+Vue.mixin(globalMethods)
 
 /* eslint-disable no-new */
 new Vue({

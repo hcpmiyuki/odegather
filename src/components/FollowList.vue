@@ -1,6 +1,10 @@
 <template>
   <div>
     <div class="wrapper">
+      <div>
+        <a v-on:click = "back" class='back-btn'><<</a>
+        <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
+      </div>
       <div class='title-header'>
         <div id="tabs">
             <label v-bind:class="{isActive: classColorSet}">
@@ -18,7 +22,7 @@
       <UserList v-bind:users='follows' msg='フォローしている人がいません' v-if="switchTab == 'follow'"></UserList>
       <UserList v-bind:users='followers' msg='フォロワーがいません' v-else></UserList>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID'></HeaderMenu>
+    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
   </div>
 </template>
 

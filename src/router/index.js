@@ -7,18 +7,26 @@ import ListList from '@/components/ListList'
 import PlaceList from '@/components/PlaceList'
 import FollowList from '@/components/FollowList'
 import AddingUserList from '@/components/AddingUserList'
+import firebase from 'firebase'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
-      component: SignIn
+      component: SignIn,
+      name: 'SignIn',
+      meta: {
+        authed: true
+      }
     },
     {
       path: '/signup',
-      component: SignUp
+      component: SignUp,
+      meta: {
+        authed: true
+      }
     },
     {
       path: '/userinfo/:uid',
@@ -47,3 +55,22 @@ export default new Router({
     }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  const authed = to.matched.some(record => record.meta.authed)
+  if (authed) {
+    // 認証状態を取得
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (!user) {
+        next()
+      } else {
+        // 認証されていない場合、認証画面へ
+        next({ name: 'UserInfo', params: { uid: user.uid}})
+      }
+    })
+  } else {
+    next()
+  }
+})
+
+export default router

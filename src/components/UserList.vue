@@ -7,10 +7,12 @@
             <img :src='user.imageName'>
           </div>
           <div>
-            <p>
+            <p v-if = 'currentUserUID == user.userID'>{{ user.screenName }}</p>
+            <p v-else>
 							<router-link :to="{ name: 'UserInfo', params: { uid: user.userID }}">
                 {{ user.screenName }}
-              </router-link></p>
+              </router-link>
+						</p>
             <p>{{ user.description }}</p>
           </div>
         </div>
@@ -26,7 +28,24 @@ import {db} from '../plugins/firebase'
 
 export default {
   name: 'UserList',
-  props: ['msg', 'users']
+	props: ['msg', 'users'],
+	data () {
+		return {
+			currentUserUID: null
+		}
+	},
+	created: function () {
+    const self = this
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        // User is signed in.
+        self.currentUserUID = user.uid
+      } else {
+        // No user is signed in.
+        console.log('ログインしていない')
+      }
+		})
+	}
 }
 </script>
 

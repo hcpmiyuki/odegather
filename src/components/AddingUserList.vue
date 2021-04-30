@@ -1,18 +1,25 @@
 <template>
   <div>
     <div class="wrapper">
+      <div>
+        <a v-on:click = "back" class='back-btn'><<</a>
+        <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
+      </div>
       <div class='title-header'>
         <h1>{{ placeName }}を追加したユーザー</h1>
       </div>
       <UserList v-bind:users='users' msg='リストに追加している人がいません'></UserList>
     </div>
+    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show='currentUserUID'></HeaderMenu>
   </div>
 </template>
 
 <script>
+import firebase from 'firebase'
 import {db} from '../plugins/firebase'
 import {storage} from '../plugins/firebase'
 import UserList from './UserList'
+import HeaderMenu from './HeaderMenu'
 
 export default {
   name: "AddingUserList",
@@ -20,17 +27,27 @@ export default {
     return {
       placeID: null,
       placeName: null,
-      users: []
+      users: [],
+      currentUserUID: null
     }
   },
   components: {
-    UserList
+    UserList,
+    HeaderMenu
   },
   created: async function () {
     const self = this
     self.placeID = self.$route.params.placeID
     self.users = await self.getUsers()
-    console.log(self.users)
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        // User is signed in.
+        self.currentUserUID = user.uid
+      } else {
+        // No user is signed in.
+        console.log('ログインしていない')
+      }
+    })
   },
   methods: {
     getUsers: async function () {

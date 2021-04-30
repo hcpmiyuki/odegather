@@ -1,6 +1,10 @@
 <template>
   <div>
     <div class="wrapper">
+      <div>
+        <a v-on:click = "back" class='back-btn'><<</a>
+        <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
+      </div>
       <div class='title-header'>
         <h1>{{ listData.name }}</h1>
       </div>
@@ -25,14 +29,14 @@
         </ul>
         <p v-else>まだ場所が登録されていません!登録してください!</p>
       </div>
-      <div class='form'>
+      <div class='form' v-show='currentUserUID == pageUID'>
         <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search">
         <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='placeData.description'></textarea>
         <input type="text" name="url" placeholder="Google MapやホームページのURL(任意)" id="url" v-model='placeData.url'>
         <p v-on:click='addNewPlace' class='btn'>登録</p>
       </div>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID'></HeaderMenu>
+    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show='currentUserUID'></HeaderMenu>
   </div>
 </template>
 

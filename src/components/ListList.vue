@@ -1,6 +1,10 @@
 <template>
   <div>
     <div class='wrapper'>
+      <div>
+        <a v-on:click = "back" class='back-btn'><<</a>
+        <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
+      </div>
       <div class='title-header'>
         <h1>{{ pageUserName }}のリスト</h1>
       </div>
@@ -14,13 +18,13 @@
         </ul>
         <p v-else>まだリストが作成されていません!作成してください!</p>
       </div>
-      <div class='form'>
+      <div class='form' v-show='currentUserUID == pageUID'>
         <input type='text' name='placeName' placeholder='リスト名(必須)' autocomplete='off' v-model='listName'>
         <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='listDescription'></textarea>
         <p v-on:click='addNewList' class='btn'>登録</p>
       </div>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID'></HeaderMenu>
+    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
   </div>
 </template>
 
@@ -85,7 +89,7 @@ export default {
           createdAt: new Date()
         })
         .then(function () {
-          self.$router.push({ path: `/places/${newListRef.id}` })
+          self.$router.push({ path: `/places/${self.pageUID}/${newListRef.id}` })
         })
         .catch((error) => {
           console.error(error);

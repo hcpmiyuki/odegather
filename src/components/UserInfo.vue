@@ -3,11 +3,15 @@
       <div class='wrapper'>
         <div id='user-container'>
           <div id='mypage-menu'>
-            <ul id='mypage-menu-list'>
-            <li><i class="fas fa-bell"></i></li>
-            <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>
-            <li><i class="fas fa-cog"></i></li>
+            <div v-show = 'currentUserUID != pageUID'>
+              <a v-on:click = "back" class='back-btn'><<</a>
+            </div>
+            <ul v-if='currentUserUID == pageUID' id='mypage-menu-list'>
+              <!-- <li><i class="fas fa-bell"></i></li> -->
+              <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>
+              <li @click='logout'><i class="fas fa-cog"></i></li>
             </ul>
+            <router-link :to="{ name: 'SignIn'}" v-else id='mypage-menu-signin'>サインイン</router-link>
           </div>
           <div id='user-header-image'>
             <div class="trim">
@@ -219,6 +223,13 @@ export default {
         followers.push(doc.id)
       })
       return followers
+    },
+    logout: function () {
+      firebase.auth().signOut().then(() => {
+        this.$router.push('/')
+      }).catch((error) => {
+        console.error('ログアウトに失敗')
+      })
     }
   }
 }
@@ -235,6 +246,8 @@ export default {
   grid-row: 1;
   grid-column: 1 / 4;
   background-color: blue;
+  display: grid;
+  grid-template-columns: 25% 25% 25% 25%;
 }
 
 #user-header-image{
@@ -295,16 +308,18 @@ export default {
 
 /* マイページのヘッダーメニュー */
 #mypage-menu-list{
-    width: 40%;
-    float: right;
-    /* height: 50px; */
+    grid-column: 4 / 5;
     display: grid;
-    grid-template-columns: 33% 33% 33%;
+    grid-template-columns: 50% 50%;
 }
 
 #mypage-menu-list li{
     text-align: center;
     display: block;
     font-size: 21px;
+}
+
+#mypage-menu-signin{
+  grid-column: 4 / 5;
 }
 </style>

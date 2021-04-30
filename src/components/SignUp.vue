@@ -1,6 +1,8 @@
 <template>
   <div class='wrapper'>
       <div class='form'>
+          <label>ニックネーム</label>
+          <input name='name' v-model='name'>
           <label>メールアドレス</label>
           <input type='email' name='email' v-model='email'>
           <label>パスワード</label>
@@ -20,31 +22,34 @@ export default {
   data () {
     return {
       email: null,
-      password: null
+      password: null,
+      name: null
     }
   },
   methods: {
     signUp: function () {
-      firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
-        .then((res) => {
-          db.collection('users').doc(res.user.uid).set({
-            screenName: '名無し',
-            imageName: 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e',
-            description: null,
-            createdAt: new Date()
-          })
-            .then(
-              this.$router.push({ path: `/userinfo/${res.user.uid}` })
-            )
-            .catch((error) => {
-              // エラー時の処理
-              console.error(error)
+      if (this.name) {
+        firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
+          .then((res) => {
+            db.collection('users').doc(res.user.uid).set({
+              screenName: this.name,
+              imageName: 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e',
+              description: null,
+              createdAt: new Date()
             })
-        })
-        .catch((error) => {
-          // エラー時の処理
-          console.error(error)
-        })
+              .then(
+                this.$router.push({ path: `/userinfo/${res.user.uid}` })
+              )
+              .catch((error) => {
+                // エラー時の処理
+                console.error(error)
+              })
+          })
+          .catch((error) => {
+            // エラー時の処理
+            console.error(error)
+          })
+      }
     }
   }
 }
