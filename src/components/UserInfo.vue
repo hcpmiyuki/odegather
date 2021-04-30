@@ -17,13 +17,13 @@
           <div id='user-header-info'>
             <p>{{pageUserData.screenName}}</p>
             <a>
-              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: '1'}}">
+              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: 'follow'}}">
                 {{pageUserData.followsCount}}
               </router-link>
               フォロー
             </a>
             <a>
-              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: '0'}}">
+              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: 'follower'}}">
                 {{pageUserData.followersCount}}
               </router-link>
               フォロワー

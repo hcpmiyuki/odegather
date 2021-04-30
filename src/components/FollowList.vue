@@ -2,47 +2,21 @@
   <div>
     <div class="wrapper">
       <div class='title-header'>
-        <!-- <h1>{{ listData.name }}</h1> -->
         <div id="tabs">
-            <input type="radio" value="1" id="tab1" v-model="followShowFlag"></input>
-            <label for="tab1">フォロー中</label>
-    
-            <input type="radio" value="0" id="tab2" v-model="followShowFlag"></input>
-            <label for="tab2">フォロワー</label>
+            <label v-bind:class="{isActive: classColorSet}">
+              <router-link :to="{ name: 'FollowList', params: { uid: pageUID, follow_flag: 'follow'}}">
+                フォロー中
+              </router-link>
+            </label>
+            <label v-bind:class="{isActive: !classColorSet}">
+              <router-link :to="{ name: 'FollowList', params: { uid: pageUID, follow_flag: 'follower'}}">
+                フォロワー
+              </router-link>
+            </label>
         </div>
-        <!-- <a v-on:click='showFollows'>フォロー中</a>
-        <a v-on:click='showFollowers'>フォロワー</a> -->
       </div>
-      <div v-if='followShowFlag == "1"' class='list small'>
-        <ul v-if="follows.length">
-          <li v-for='(follow, index) in follows' :key='index'>
-            <div class='ff-list'>
-              <div class="trim icon">
-                <img :src='follow.imageName'>
-              </div>
-              <p><router-link :to="{ name: 'UserInfo', params: { uid: follow.userID }}">
-                {{ follow.screenName }}
-              </router-link></p>
-            </div>
-          </li>
-        </ul>
-        <p v-else>フォローしている人がいません</p>
-      </div>
-      <div v-else-if='followShowFlag == "0"' class='list small'>
-        <ul v-if="followers.length">
-          <li v-for='(follower, index) in followers' :key='index'>
-            <div class='ff-list'>
-              <div class="trim icon">
-                <img :src='follower.imageName'>
-              </div>
-              <p><router-link :to="{ name: 'UserInfo', params: { uid: follower.userID }}">
-                {{ follower.screenName }}
-              </router-link></p>
-            </div>
-          </li>
-        </ul>
-        <p v-else>フォロワーがいません</p>
-      </div>
+      <UserList v-bind:users='follows' msg='フォローしている人がいません' v-if="switchTab == 'follow'"></UserList>
+      <UserList v-bind:users='followers' msg='フォロワーがいません' v-else></UserList>
     </div>
     <HeaderMenu v-bind:currentUserUID='currentUserUID'></HeaderMenu>
   </div>
@@ -52,6 +26,7 @@
 import firebase from 'firebase'
 import {db} from '../plugins/firebase'
 import HeaderMenu from './HeaderMenu'
+import UserList from './UserList'
 
 export default {
   name: 'FollowList',
@@ -61,16 +36,17 @@ export default {
       currentUserUID: null,
       follows: [],
       followers: [],
-      followShowFlag: true
+      followShowFlag: null,
+      isActive: true
     }
   },
   components: {
-    HeaderMenu
+    HeaderMenu,
+    UserList
   },
   created: async function () {
     const self = this
     self.pageUID = self.$route.params.uid
-    self.followShowFlag = self.$route.params.follow_flag
 
     await firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
@@ -82,48 +58,39 @@ export default {
       }
     })
 
-    self.follows = await self.getFollows(self.pageUID)
-    self.followers = await self.getFollowers(self.pageUID)
+    self.follows = await self.getUsers(self.pageUID, 'follows')
+    self.followers = await self.getUsers(self.pageUID, 'followers')
     
   },methods: {
-    getFollows: async function (UID) {
+    getUsers: async function (UID, collectionName='follows') {
       const self = this
       var userDocRef = db.collection('users').doc(UID)
-      var followDocs = await userDocRef.collection('follows').get()
-      let follows = []
-      followDocs.forEach(async function (doc) {
+      var userDocs = await userDocRef.collection(collectionName).get()
+      let users = []
+      userDocs.forEach(async function (doc) {
         let userDoc = await db.collection('users').doc(doc.id).get()
-        follows.push({
+        users.push({
           'userID': userDoc.id,
           'imageName': userDoc.data().imageName,
-          'screenName': userDoc.data().screenName
+          'screenName': userDoc.data().screenName,
+          'description': userDoc.data().description
         })
       })
-      return follows
-    },
-    getFollowers: async function (UID) {
-      const self = this
-      var userDocRef = db.collection('users').doc(UID)
-      var followerDocs = await userDocRef.collection('followers').get()
-      let followers = []
-      followerDocs.forEach(async function (doc) {
-        let userDoc = await db.collection('users').doc(doc.id).get()
-        followers.push({
-          'userID': userDoc.id,
-          'imageName': userDoc.data().imageName,
-          'screenName': userDoc.data().screenName
-        })
-      })
-      return followers
-    },
-    showFollows: function () {
-      const self = this
-      self.followShowFlag = true
-    },
-    showFollowers: function () {
-      const self = this
-      self.followShowFlag = false
+      return users
     }
+  },
+  computed: {
+    switchTab: function () {
+      console.log('hoge')
+      return this.followShowFlag = this.$route.params.follow_flag
+    },
+    classColorSet: function(){
+      if (this.$route.params.follow_flag == 'follow') {
+        return true
+      } else if (this.$route.params.follow_flag == 'follower') {
+        return false
+      }
+  　}
   }
 }
 </script>
@@ -149,8 +116,7 @@ export default {
     border-radius: 10px 10px 0 0;
 }
  
-#tabs input:checked + label,
-#tabs label:hover {
+#tabs .isActive{
     background: var(--accent-color);
     color: #fff;
 }

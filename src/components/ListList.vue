@@ -7,7 +7,7 @@
       <div class='list'>
         <ul v-if='lists.length'>
           <li v-for='(list, index) in lists' :key='index'>
-          <p><router-link :to="{ name: 'PlaceList', params: { listID: list.id }}">{{ list.name }}</router-link></p>
+          <p><router-link :to="{ name: 'PlaceList', params: { listID: list.id, uid: pageUID}}">{{ list.name }}</router-link></p>
           <p>{{ list.description }}</p>
           <a v-on:click='deleteList(list.id)'>削除</a>
           </li>
@@ -76,7 +76,7 @@ export default {
     },
     addNewList: function () {
       const self = this
-      if (self.listName && self.listDescription) {
+      if (self.listName) {
         var newListRef = db.collection('users').doc(self.currentUserUID).collection('lists').doc();
         newListRef.set({
           documentID: newListRef.id,

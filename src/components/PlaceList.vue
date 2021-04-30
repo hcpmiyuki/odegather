@@ -17,7 +17,8 @@
               <p>{{ place.types }}</p>
               <p>{{ place.description }}</p>
               <a :href='place.url' target="_brank">googlemapでみる</a>
-              <p>{{ place.listedCount }}人がこの場所をリストに登録しています</p>
+              <p><router-link :to="{ name: 'AddingUserList', params: { placeID: place.placeID }}">
+                {{ place.listedCount }}人</router-link>がこの場所をリストに登録しています</p>
               <a v-on:click='deletePlace(place.placeID)'>削除</a>
             </div>
           </li>
@@ -44,6 +45,7 @@ export default {
   name: 'PlaceList',
   data () {
     return {
+      pageUID: null,
       listDocPath: null,
       listID: null,
       currentUserUID: null,
@@ -96,6 +98,7 @@ export default {
   created: function () {
     const self = this
     self.listID = self.$route.params.listID
+    self.pageUID = self.$route.params.uid
     self.getPlaces()
     firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
@@ -110,22 +113,23 @@ export default {
   methods: {
     getPlaces: async function () {
       const self = this
-      var listDocs = await db.collectionGroup('lists').where('documentID', '==', self.listID)
-        .orderBy('createdAt', 'desc')
-        .get()
+      var listDoc = await db.collection('users')
+      .doc(self.pageUID)
+      .collection('lists')
+      .doc(self.listID)
+      .get()
 
-      listDocs.forEach(async function (doc) {
-        self.listDocPath = doc.ref.path
+      self.listDocPath = listDoc.ref.path
+      self.listData['documentID'] = listDoc.data().documentID
+      self.listData['name'] = listDoc.data().name
+      self.listData['createdAt'] = listDoc.data().createdAt
+    
+      var placesDocs = await listDoc.ref.collection('places').orderBy('createdAt', 'desc').get()
+      var places = []
+      placesDocs.forEach(async function (doc) {
+        var placeDocRefs = await db.collectionGroup('places').where('placeID', '==', doc.id).get()
 
-        var placesDocs = await doc.ref.collection('places').orderBy('createdAt', 'desc').get()
-        self.listData['documentID'] = doc.data().documentID
-        self.listData['name'] = doc.data().name
-        self.listData['createdAt'] = doc.data().createdAt
-        var places = []
-        placesDocs.forEach(async function (doc) {
-          var placeDocRefs = await db.collectionGroup('places').where('placeID', '==', doc.id).get()
-
-          places.push({
+        places.push({
             'placeID': doc.data().placeID,
             'description': doc.data().description,
             'createdAt': doc.data().createdAt,
@@ -134,10 +138,10 @@ export default {
             'types': doc.data().types,
             'url': doc.data().url,
             'listedCount': placeDocRefs.size
-          })
         })
-        self.places = places
       })
+      self.places = places
+
     },
     addNewPlace: async function () {
       const self = this
@@ -169,6 +173,12 @@ export default {
           console.error(error);
       });
     }
+    // showUserList: async function (placeID) {
+    //   var placeDocs = await db.collectionGroup('places').where('placeID', '==', placeID).get()
+    //   placeDocs.forEach( function (doc) {
+    //     var userID = doc.ref.parent.parent.parent.parent.id
+    //   })
+    // }
   }
 }
 </script>
