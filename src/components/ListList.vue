@@ -14,6 +14,7 @@
           <p><router-link :to="{ name: 'PlaceList', params: { listID: list.id, uid: pageUID}}">{{ list.name }}</router-link></p>
           <p>{{ list.description }}</p>
           <a v-on:click='deleteList(list.id)'>削除</a>
+          <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a>
           </li>
         </ul>
         <p v-else>まだリストが作成されていません!作成してください!</p>
@@ -23,6 +24,12 @@
         <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='listDescription'></textarea>
         <p v-on:click='addNewList' class='btn'>登録</p>
       </div>
+      <ShareModal
+        v-if="showShareModal"
+        :userName='pageUserName'
+        :listName='shareListName'
+        @close="showShareModal = false">
+      </ShareModal>
     </div>
     <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
   </div>
@@ -32,6 +39,7 @@
 import firebase from 'firebase'
 import {db} from '../plugins/firebase'
 import HeaderMenu from './HeaderMenu'
+import ShareModal from './ShareModal'
 
 export default {
   name: 'ListList',
@@ -40,13 +48,16 @@ export default {
       pageUID: null,
       pageUserName: null,
       currentUserUID: null,
+      shareListName: null,
       lists: [],
       listName: null,
-      listDescription: null
+      listDescription: null,
+      showShareModal: false
     }
   },
   components: {
-    HeaderMenu
+    HeaderMenu,
+    ShareModal
   },
   created: function () {
     const self = this
