@@ -10,8 +10,7 @@ import './plugins/firebase'
 import globalMethods from './utils/global'
 
 Vue.config.productionTip = false
-Vue.use(VueAxios)
-Vue.use(axios)
+Vue.use(VueAxios,axios)
 Vue.use(VueClipboard)
 // グローバルメソッドのグローバルミックスイン
 Vue.mixin(globalMethods)

@@ -84,8 +84,9 @@ export default {
     window.initMap = () => {
       var options = {
         componentRestrictions: { country: "jp" },
-        fields: ["name", "place_id", "url", "photo", "type"],
+        fields: ["name", "place_id", "url", "photo", "type", 'reviews'],
         types: ["establishment"],
+        language: 'ja'
       }
 
       let autocomplete = new window.google.maps.places.Autocomplete(this.$refs.search, options);
@@ -96,7 +97,12 @@ export default {
         self.placeData.types = place.types.filter(n => !["point_of_interest", "establishment"].includes(n));
         self.placeData.url = place.url
         self.placeData.placeID = place.place_id
+        self.placeData.reviews = place.reviews.map(function (item) { return item.text })
+
+        console.log(self.placeData.reviews)
       })
+
+      
     }
   },
   created: function () {
@@ -151,9 +157,36 @@ export default {
       const self = this
       self.placeData.createdAt = new Date()
 
-      db.doc(self.listDocPath).collection('places').doc(self.placeData.placeID)
-        .set(self.placeData)
-        .then(function() {
+      // db.doc(self.listDocPath).collection('places').doc(self.placeData.placeID)
+      //   .set(self.placeData)
+      //   .then(function() {
+
+      //   })
+      //   .catch(function(error) {
+      //     console.error(error);
+      //   })
+        let placeDoRef = db.doc(self.listDocPath).collection('places').doc(self.placeData.placeID)
+        let allPlaceDoc = await db.collection('all_places').doc(self.placeData.placeID).get()
+
+        try {
+          const batch = db.batch()
+
+          await batch.set( placeDoRef, self.placeData)
+          
+          if (!allPlaceDoc.exists) {
+            let allPlaceDocRef = db.collection('all_places').doc(self.placeData.placeID)
+            let placeData = {
+              'placeID': self.placeData.placeID,
+              'reviews': self.placeData.reviews,
+              'types': self.placeData.types,
+              'createdAt': self.placeData.createdAt,
+              'name': self.placeData.name
+            }
+            await batch.set(allPlaceDocRef, placeData)
+          }
+
+          await batch.commit()
+
           self.getPlaces()
 
           // フォームを初期化する
@@ -162,10 +195,9 @@ export default {
             placeDataTemp[key] = null
           }
           self.placeData = placeDataTemp
-        })
-        .catch(function(error) {
+        } catch (error) {
           console.error(error);
-        })
+        }
     },
     deletePlace: function (placeID) {
       const self = this
