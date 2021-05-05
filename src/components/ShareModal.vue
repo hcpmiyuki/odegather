@@ -6,16 +6,25 @@
             <div class="modal-container">
               <ul id='share-menu'>
                 <li>
-                  <i class="fas fa-copy"></i>
-                  <a>コピー</a>
+                  <a
+                  v-clipboard:copy="currentPageUrl"
+                  v-clipboard:success="onCopy"
+                  v-clipboard:error="onError">
+                    <i class="fas fa-copy"></i>
+                    <a>コピー</a>
+                  </a>
                 </li>
                 <li>
-                  <i class="fab fa-twitter"></i>
-                  <a :href="twUrl" target="_brank">Twitter</a>
+                  <a :href="twUrl" target="_brank">
+                    <i class="fab fa-twitter"></i>
+                    <a>Twitter</a>
+                  </a>
                 </li>
                 <li>
-                  <i class="fab fa-line"></i>
-                  <a>LINE</a>
+                  <a :href="lineUrl" target="_brank">
+                    <i class="fab fa-line"></i>
+                    <a>LINE</a>
+                  </a>
                 </li>
               </ul>
 
@@ -42,17 +51,30 @@ export default {
   props: ['userName', 'listName'],
   data: function() {
     return {
-      'twUrl': ''
+      'twUrl': '',
+      'lineUrl': '',
+      'currentPageUrl': ''
     }
   },
   created: function () {
     // 現在のurlをエンコード
     var url = encodeURIComponent(location.href)
-    // ページ文言(タイトルとかdescription) ここではdescriptionを使用
+    this.currentPageUrl = location.href
+    // ページ文言
     var txt = encodeURIComponent(`${this.userName}さんの${this.listName}リスト`)
     var hashtags = 'odegather,おでぎゃざ'
-    // Twitter用のurl作成 ハッシュタグもtxtを使用
+    // Twitter用のurl作成
     this.twUrl = 'https://twitter.com/intent/tweet?text=' + txt + '&hashtags=' + hashtags + '&url=' + url
+    // Line用のurl作成
+    this.lineUrl = `https://social-plugins.line.me/lineit/share?url=${url}`
+  },
+  methods: {
+    onCopy: function () {
+      alert('クリップボードにコピーしました!')
+    },
+    onError: function () {
+      alert('ごめんなさいコピーに失敗しました...')
+    }
   }
 }
 </script>

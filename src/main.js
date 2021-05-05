@@ -5,11 +5,14 @@ import App from './App'
 import router from './router'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
+import VueClipboard from 'vue-clipboard2'
 import './plugins/firebase'
 import globalMethods from './utils/global'
 
 Vue.config.productionTip = false
-Vue.use(VueAxios, axios)
+Vue.use(VueAxios)
+Vue.use(axios)
+Vue.use(VueClipboard)
 // グローバルメソッドのグローバルミックスイン
 Vue.mixin(globalMethods)
 
