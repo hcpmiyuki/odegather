@@ -93,16 +93,29 @@ export default {
       autocomplete.addListener("place_changed", function() {
         var place = autocomplete.getPlace()
         self.placeData.name = place.name
-        self.placeData.photoUrl = place.photos[0].getUrl()
-        self.placeData.types = place.types.filter(n => !["point_of_interest", "establishment"].includes(n));
-        self.placeData.url = place.url
         self.placeData.placeID = place.place_id
-        self.placeData.reviews = place.reviews.map(function (item) { return item.text })
+        self.placeData.url = place.url
 
-        console.log(self.placeData.reviews)
+        if (place.photos && place.photos.length != 0) {
+          self.placeData.photoUrl = place.photos[0].getUrl()
+        } else {
+          self.placeData.photoUrl = 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e'
+        }
+
+        if (place.types) {
+          self.placeData.types = place.types.filter(n => !["point_of_interest", "establishment"].includes(n));
+        } else {
+          self.placeData.types = []
+        }
+
+        if (place.reviews) {
+          self.placeData.reviews = place.reviews.map(function (item) { return item.text })
+        } else {
+          self.placeData.reviews = []
+        }
+        
       })
 
-      
     }
   },
   created: function () {

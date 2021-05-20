@@ -62,6 +62,7 @@ import {db} from '../plugins/firebase'
 import firebase from 'firebase'
 import HeaderMenu from './HeaderMenu'
 import UserInfoEdit from './UserInfoEdit'
+import axios from 'axios'
 
 export default {
   name: 'UserInfo',
@@ -91,7 +92,9 @@ export default {
       },
       followBtnShow: false,
       unFollowBtnShow: false,
-      showUserInfoEditModal: false
+      showUserInfoEditModal: false,
+      apiUrl:'https://portfolio-310607.uc.r.appspot.com/reccomend-users',
+      recommendedUsers: null
     }
   },
   components: {
@@ -119,6 +122,11 @@ export default {
       self.followBtnShow = true
     } else if (self.pageUID !== self.currentUserUID){
       self.unFollowBtnShow = true
+    }
+
+    if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
+
+      self.recommendedUsers = await this.getRecommendedUsers(this.currentUserUID)
     }
   },
   methods: {
@@ -223,6 +231,13 @@ export default {
         followers.push(doc.id)
       })
       return followers
+    },
+    getRecommendedUsers: async function (UID) {
+      const recommend_user_count = this.currentUserData.followsCount*2+1
+      this.axios.get(this.apiUrl, {params: {'user_id': UID, 'recommend_user_count': recommend_user_count}})
+      .then(res => {
+        console.log(res.data.results)
+      })
     },
     logout: function () {
       firebase.auth().signOut().then(() => {
