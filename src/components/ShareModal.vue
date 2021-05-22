@@ -3,37 +3,32 @@
       <transition name="modal">
         <div class="modal-mask">
           <div class="modal-wrapper">
-            <div class="modal-container">
-              <ul id='share-menu'>
-                <li>
-                  <a
-                  v-clipboard:copy="currentPageUrl"
-                  v-clipboard:success="onCopy"
-                  v-clipboard:error="onError">
-                    <i class="fas fa-copy"></i>
-                    <a>コピー</a>
-                  </a>
-                </li>
-                <li>
-                  <a :href="twUrl" target="_brank">
-                    <i class="fab fa-twitter"></i>
-                    <a>Twitter</a>
-                  </a>
-                </li>
-                <li>
-                  <a :href="lineUrl" target="_brank">
-                    <i class="fab fa-line"></i>
-                    <a>LINE</a>
-                  </a>
-                </li>
-              </ul>
-
-              <div class="modal-footer">
-                <slot name="footer">
-                  <button class="modal-default-button" @click="$emit('close')">
-                    キャンセル
-                  </button>
-                </slot>
+            <div class="modal-container small">
+              <i class="far fa-times-circle modal-default-button" @click="$emit('close')"></i>
+              <div id='share-menu'>
+                <ul id='share-menu-list'>
+                  <li>
+                    <a
+                    v-clipboard:copy="currentPageUrl"
+                    v-clipboard:success="onCopy"
+                    v-clipboard:error="onError">
+                      <i class="fas fa-copy"></i>
+                      <a>コピー</a>
+                    </a>
+                  </li>
+                  <li>
+                    <a :href="twUrl" target="_brank">
+                      <i class="fab fa-twitter"></i>
+                      <a>Twitter</a>
+                    </a>
+                  </li>
+                  <li>
+                    <a :href="lineUrl" target="_brank">
+                      <i class="fab fa-line"></i>
+                      <a>LINE</a>
+                    </a>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -83,34 +78,43 @@ export default {
   width:50%;
 }
 
+.modal-container.small{
+  padding: 6px 9px;
+}
+
 #share-menu{
+ margin-top: 40px;
+ margin-bottom: 20px;
+}
+
+#share-menu-list{
   display: grid;
   grid-template-columns: 33% 33% 33%;
 }
 
-#share-menu li{
+#share-menu-list li{
   display: block;
   list-style: none;
   text-align: center;
 }
 
-#share-menu li a{
+#share-menu-list li a{
   display: block;
 }
 
-#share-menu li i{
+#share-menu-list li i{
   font-size: 50px;
 }
 
-#share-menu li .fa-line{
+#share-menu-list li .fa-line{
   color: #00B900;
 }
 
-#share-menu li .fa-twitter{
+#share-menu-list li .fa-twitter{
   color: #1DA1F2;
 }
 
-#share-menu li .fa-copy{
+#share-menu-list li .fa-copy{
   color: gray;
 }
 

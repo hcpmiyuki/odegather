@@ -88,6 +88,23 @@ body,html{
     position: relative; 
 }
 
+.title-header h1{
+    color: var(--main-color);
+}
+
+.list .name{
+    font-size: 21px;
+}
+
+.list .btn_area{
+    float: right;
+    color: var(--sub-color);
+}
+.list .btn_area a{
+    padding: 0 3px;
+    font-size: 16px;
+}
+
 /* メニュー固定 */
 #menu{
     width: 100%;
@@ -166,4 +183,9 @@ body,html{
   .modal-leave-active .modal-container {
     -webkit-transform: scale(1.1);
     transform: scale(1.1);
+  }
+
+  .modal-default-button{
+    color: var(--accent-color);
+    font-size: 27px;
   }

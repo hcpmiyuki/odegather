@@ -7,23 +7,29 @@
       </div>
       <div class='title-header'>
         <h1>{{ listData.name }}</h1>
+        <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a>
       </div>
       <div class='list place'>
         <ul v-if='places.length'>
           <li v-for='(place, index) in places' :key='index'>
-            <div id='palce-list-title'>
-              <a>{{ place.name }}</a>
+            <p id='palce-list-title' class='name'>{{ place.name }}</p>
+            <a><router-link :to="{ name: 'AddingUserList', params: { placeID: place.placeID }}">
+                  {{ place.listedCount }}人</router-link>がこの場所をリストに登録しています</a>
+            <div id='place-list-info'>
+              <div id='place-list-image'>
+                <img :src='place.photoUrl'>
+              </div>
+              <div id='place-list-content'>
+                <ul>
+                  <li v-if="place.types.length != 0">{{ place.types.join() }}</li>
+                  <li v-else>カテゴリ不明</li>
+                  <li>{{ place.description }}</li>
+                </ul>
+              </div>
             </div>
-            <div id='place-list-image'>
-              <img :src='place.photoUrl'>
-            </div>
-            <div id='place-list-content'>
-              <p>{{ place.types }}</p>
-              <p>{{ place.description }}</p>
-              <a :href='place.url' target="_brank">googlemapでみる</a>
-              <p><router-link :to="{ name: 'AddingUserList', params: { placeID: place.placeID }}">
-                {{ place.listedCount }}人</router-link>がこの場所をリストに登録しています</p>
-              <a v-on:click='deletePlace(place.placeID)'>削除</a>
+            <div class='btn_area'>
+              <a :href='place.url' target="_brank"><i class="fas fa-map-marked-alt"></i></a>
+              <a v-on:click='deletePlace(place.placeID)'><i class="fas fa-trash-alt"></i></a>
             </div>
           </li>
         </ul>
@@ -35,6 +41,12 @@
         <input type="text" name="url" placeholder="Google MapやホームページのURL(任意)" id="url" v-model='placeData.url'>
         <p v-on:click='addNewPlace' class='btn'>登録</p>
       </div>
+      <ShareModal
+        v-if="showShareModal"
+        :userName='pageUserName'
+        :listName='listData.name'
+        @close="showShareModal = false">
+      </ShareModal>
     </div>
     <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show='currentUserUID'></HeaderMenu>
   </div>
@@ -44,6 +56,7 @@
 import firebase from 'firebase'
 import {db} from '../plugins/firebase'
 import HeaderMenu from './HeaderMenu'
+import ShareModal from './ShareModal'
 
 export default {
   name: 'PlaceList',
@@ -52,6 +65,7 @@ export default {
       pageUID: null,
       listDocPath: null,
       listID: null,
+      pageUserName: null,
       currentUserUID: null,
       placeData: {
         'placeID': null,
@@ -63,17 +77,17 @@ export default {
         'url': null
       },
       places: [],
-      propsPlaceData: null,
       listData: {
         'documentID': null,
         'name': null,
         'createdAt': null
       },
-      showModalFlag: false
+      showShareModal: false
     }
   },
   components: {
-    HeaderMenu
+    HeaderMenu,
+    ShareModal
   },
   mounted: function () {
     const self = this
@@ -136,12 +150,16 @@ export default {
   methods: {
     getPlaces: async function () {
       const self = this
-      var listDoc = await db.collection('users')
+
+      let userRef = db.collection('users')
       .doc(self.pageUID)
-      .collection('lists')
+      let userDoc = await userRef.get()
+      self.pageUserName = userDoc.data().screenName
+
+      var listDoc = await userRef.collection('lists')
       .doc(self.listID)
       .get()
-
+      
       self.listDocPath = listDoc.ref.path
       self.listData['documentID'] = listDoc.data().documentID
       self.listData['name'] = listDoc.data().name
@@ -234,15 +252,10 @@ export default {
 
 <style scoped>
 
-.list.place li{
+.list.place #place-list-info{
   display: grid;
-  grid-template-rows: 30px 1fr;
   grid-template-columns: 33% 1fr;
-}
-
-#palce-list-title{
-  grid-row: 1;
-  grid-column: 1 / 3;
+  margin-top: 10px;
 }
 
 #place-list-image{
@@ -251,6 +264,34 @@ export default {
 
 img{
   width: 90%;
+}
+
+.list.place .name{
+    font-size: 18px;
+}
+
+a,li{
+  font-size: 12px;
+}
+
+#place-list-content li{
+  background-color: inherit;
+  margin-top: inherit;
+  margin-bottom: inherit;
+  border-radius: inherit;
+  padding: inherit;
+  box-shadow: inherit;
+  position: inherit;
+}
+
+.title-header h1{
+  display: inline;
+}
+
+.title-header a{
+  font-size: 32px;
+  padding-left: 15px;
+  color: var(--accent-color);
 }
 
 </style>

@@ -11,10 +11,12 @@
       <div class='list'>
         <ul v-if='lists.length'>
           <li v-for='(list, index) in lists' :key='index'>
-          <p><router-link :to="{ name: 'PlaceList', params: { listID: list.id, uid: pageUID}}">{{ list.name }}</router-link></p>
-          <p>{{ list.description }}</p>
-          <a v-on:click='deleteList(list.id)'>削除</a>
-          <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a>
+          <p class='name'><router-link :to="{ name: 'PlaceList', params: { listID: list.id, uid: pageUID}}">{{ list.name }}</router-link></p>
+          <p class='description'>{{ list.description }}</p>
+          <div class='btn_area'>
+            <a v-on:click='deleteList(list.id)'><i class="fas fa-trash-alt"></i></a>
+            <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a>
+          </div>
           </li>
         </ul>
         <p v-else>まだリストが作成されていません!作成してください!</p>
@@ -124,4 +126,11 @@ export default {
 </script>
 
 <style scoped>
+.title-header{
+  color: var(--main-color);
+}
+
+.list .description{
+  font-size: 12px
+}
 </style>

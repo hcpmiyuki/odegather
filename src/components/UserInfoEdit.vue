@@ -117,9 +117,4 @@ export default {
   width:50%;
 }
 
-.modal-default-button{
-  color: var(--accent-color);
-  font-size: 27px;
-}
-
 </style>
