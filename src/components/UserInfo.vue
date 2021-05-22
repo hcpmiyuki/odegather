@@ -2,46 +2,67 @@
     <div>
       <div class='wrapper'>
         <div id='user-container'>
-          <div id='mypage-menu'>
-            <div v-show = 'currentUserUID != pageUID'>
-              <a v-on:click = "back" class='back-btn'><<</a>
+          <div id='user-header'>
+            <div id='mypage-menu'>
+              <div v-show = 'currentUserUID != pageUID'>
+                <a v-on:click = "back" class='back-btn'><<</a>
+              </div>
+              <ul v-if='currentUserUID == pageUID' id='mypage-menu-list'>
+                <!-- <li><i class="fas fa-bell"></i></li> -->
+                <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>
+                <li @click='logout'><i class="fas fa-cog"></i></li>
+              </ul>
+              <router-link :to="{ name: 'SignIn'}" v-else id='mypage-menu-signin'>サインイン</router-link>
             </div>
-            <ul v-if='currentUserUID == pageUID' id='mypage-menu-list'>
-              <!-- <li><i class="fas fa-bell"></i></li> -->
-              <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>
-              <li @click='logout'><i class="fas fa-cog"></i></li>
-            </ul>
-            <router-link :to="{ name: 'SignIn'}" v-else id='mypage-menu-signin'>サインイン</router-link>
-          </div>
-          <div id='user-header-image'>
-            <div class="trim">
-              <img :src="pageUserData.imageName">
+            <div id='user-header-image'>
+              <div class="trim">
+                <img :src="pageUserData.imageName">
+              </div>
+            </div>
+            <div id='user-header-info'>
+              <p class='username'>{{pageUserData.screenName}}</p>
+              <a>
+                <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: 'follow'}}">
+                  {{pageUserData.followsCount}}
+                </router-link>
+                フォロー
+              </a>
+              <a>
+                <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: 'follower'}}">
+                  {{pageUserData.followersCount}}
+                </router-link>
+                フォロワー
+              </a>
+              <div id='btn-area'>
+                <p v-if="followBtnShow" class='btn follow' v-on:click='followUser'>フォローする</p>
+                <p v-if="unFollowBtnShow" class='btn follow' v-on:click='unFollowUser'>フォロー解除</p>
+                <p class='btn list'>
+                  <router-link :to="{ name: 'ListList', params: { uid: pageUserData.userID}}">
+                  リストを見る
+                  </router-link>
+                </p>
+              </div>    
             </div>
           </div>
-          <div id='user-header-info'>
-            <p>{{pageUserData.screenName}}</p>
-            <a>
-              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: 'follow'}}">
-                {{pageUserData.followsCount}}
+        
+        <div id='user-description' v-show="pageUserData.description">
+          <p>{{pageUserData.description}}</p>
+        </div>
+        
+        <div id="user-recommend" v-show="showRecommendedUsersData">
+          <p>あなたにおすすめのユーザー</p>
+          <div class='recommended_users'>
+            <div v-for="user in showRecommendedUsersData" :key="user.userID" class="recommended_user">
+              <div class="trim">
+                <img :src="user.imageName">
+              </div>
+              <router-link :to="{ name: 'UserInfo', params: { uid: user.userID }}">
+              {{ user.screenName }}
               </router-link>
-              フォロー
-            </a>
-            <a>
-              <router-link :to="{ name: 'FollowList', params: { uid: pageUserData.userID, follow_flag: 'follower'}}">
-                {{pageUserData.followersCount}}
-              </router-link>
-              フォロワー
-            </a>
-            <p v-if="followBtnShow" class='btn follow' v-on:click='followUser'>フォローする</p>
-            <p v-if="unFollowBtnShow" class='btn follow' v-on:click='unFollowUser'>フォローをやめる</p>            
-          </div>
-          <div id='user-description'>
-            <p>{{pageUserData.description}}</p>
-          </div>
-          <div id='user-content'>
-            <p>{{pageUserData.screenName}}さんの<router-link :to="{ name: 'ListList', params: { uid: pageUserData.userID }}">リスト</router-link>を見る</p>
+            </div>
           </div>
         </div>
+        
         <UserInfoEdit
         v-if="showUserInfoEditModal"
         @close="showUserInfoEditModal = false"
@@ -50,9 +71,12 @@
         :imageName="currentUserData.imageName"
         :description="currentUserData.description">
         </UserInfoEdit>
+      
+        
       </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
     </div>
+    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
+  </div>
 </template>
 
 
@@ -94,7 +118,9 @@ export default {
       unFollowBtnShow: false,
       showUserInfoEditModal: false,
       apiUrl:'https://portfolio-310607.uc.r.appspot.com/reccomend-users',
-      recommendedUsers: null
+      recommendedUsers: [],
+      showRecommendedUsers: [],
+      showRecommendedUsersData: null
     }
   },
   components: {
@@ -126,7 +152,7 @@ export default {
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
 
-      self.recommendedUsers = await this.getRecommendedUsers(this.currentUserUID)
+      await this.getRecommendedUsersData(this.currentUserUID)
     }
   },
   methods: {
@@ -233,11 +259,37 @@ export default {
       return followers
     },
     getRecommendedUsers: async function (UID) {
-      const recommend_user_count = this.currentUserData.followsCount*2+1
-      this.axios.get(this.apiUrl, {params: {'user_id': UID, 'recommend_user_count': recommend_user_count}})
+      const recommend_user_count = this.currentUserData.followsCount < 2 ? 5 : this.currentUserData.followsCount*2+1
+      let recommendedUsers = []
+      await this.axios.get(this.apiUrl, {params: {'user_id': UID, 'recommend_user_count': recommend_user_count}})
       .then(res => {
-        console.log(res.data.results)
+        // すでにフォローしている人は表示しない
+        recommendedUsers = res.data.results.filter(i => this.currentUserData.follows.indexOf(i) == -1)
       })
+      .catch(error => {
+        console.error(error)
+      })
+
+      return recommendedUsers
+    },
+    getRecommendedUsersData: async function (UID) {
+      const self = this
+      const recommendedUsers = await self.getRecommendedUsers(UID)
+      self.showRecommendedUsers = recommendedUsers.slice(1, 4)
+      self.recommendedUsers = recommendedUsers.slice(4,)
+
+      if (self.showRecommendedUsers.length != 0) {
+        self.showRecommendedUsersData = []
+        const userDocs = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', self.showRecommendedUsers).get()
+        userDocs.forEach(async function (doc) {
+          self.showRecommendedUsersData.unshift({
+            'userID': doc.id,
+            'screenName': doc.data().screenName,
+            'imageName': doc.data().imageName,
+          })
+        })
+      }
+      
     },
     logout: function () {
       firebase.auth().signOut().then(() => {
@@ -252,23 +304,25 @@ export default {
 
 <style>
 #user-container{
+  color: var(--main-color);
+}
+#user-header{
   display: grid;
-  grid-template-rows: 30px 150px 100px 1fr;
+  grid-template-rows: 30px 120px;
   grid-template-columns: 34% 33% 33%;
 }
 
 #mypage-menu{
   grid-row: 1;
   grid-column: 1 / 4;
-  background-color: blue;
   display: grid;
   grid-template-columns: 25% 25% 25% 25%;
+  color: var(--sub-color);
 }
 
 #user-header-image{
   grid-row: 2;
   grid-column: 1/2;
-  background-color: red;
   height: 150px;
   width: 100%;
 }
@@ -276,33 +330,81 @@ export default {
 #user-header-info{
   grid-row: 2;
   grid-column: 2/4;
-  background-color: green;
-  height: 150px;
-  width: 100%;
+  padding-left: 20px;
+}
+
+#user-header-info .username{
+  font-size: 21px;
+}
+
+#user-header-info .btn{
+  width: 85px;
+  font-size: smaller;
+  margin: 5px auto;
+}
+
+#user-header-info #btn-area{
+  display: flex;
+}
+
+#user-header-info .btn.follow{
+  background-color: var(--main-color);
+  color: var(--sub-color);
 }
 
 #user-description{
-  grid-row: 3;
-  grid-column: 1 / 4;
-  background-color: yellow;
-  height: 150px;
-  width: 100%;
+  padding: 10px 0;
 }
 
-#user-content{
-  grid-row: 4;
-  grid-column: 1 / 4;
-  background-color: blue;
-  height: 150px;
-  width: 100%;
+#user-recommend{
+  padding: 20px 0;
+}
+
+#user-recommend p{
+  padding-left: 10px;
+  font-size: 21px;
+}
+
+.recommended_users{
+  display: grid;
+  grid-template-columns: 34% 33% 33%;
+}
+
+
+.recommended_users .recommended_user{
+  background-color: var(--main-color);
+  padding: 9px 5px;
+  border-radius: 10px;
+  margin: 0 4%;
+  text-align: center;
+}
+
+.recommended_users .recommended_user:nth-child(1){
+  margin-right: 8%;
+  margin-left: 0;
+
+}
+
+.recommended_users .recommended_user:nth-child(3){
+  margin-right: 0;
+  margin-left: 8%;
+}
+
+.recommended_users .trim{
+  margin: 0 auto;
+  width: 75%;
+}
+
+.recommended_users .recommended_user a{
+  font-size: small;
 }
 
 /* アイコン */
 .trim {
   position:relative;
   overflow: hidden;
-  width:90%;
-  margin: 15px auto;
+  width:80%;
+  margin: 0 auto;
   border-radius:50%;
 }
 

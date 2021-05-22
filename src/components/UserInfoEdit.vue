@@ -4,6 +4,7 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container">
+              <i class="far fa-times-circle modal-default-button" @click="$emit('close')"></i>
               <div class='form'>
                 <div class="trim small">
                   <img :src="userData.imageName">
@@ -13,14 +14,6 @@
                 <textarea name='description' rows=4 placeholder='自己紹介(最大100字)' maxlength='100' v-model='userData.description'></textarea>
                 <p class='btn' @click='editUserInfo'>登録</p>
               </div>
-
-              <div class="modal-footer">
-                <slot name="footer">
-                  <button class="modal-default-button" @click="$emit('close')">
-                    キャンセル
-                  </button>
-                </slot>
-              </div>
             </div>
           </div>
         </div>
@@ -122,6 +115,11 @@ export default {
 <style>
 .trim.small{
   width:50%;
+}
+
+.modal-default-button{
+  color: var(--accent-color);
+  font-size: 27px;
 }
 
 </style>
