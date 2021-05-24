@@ -10,7 +10,7 @@
               <ul v-if='currentUserUID == pageUID' id='mypage-menu-list'>
                 <!-- <li><i class="fas fa-bell"></i></li> -->
                 <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>
-                <li @click='logout'><i class="fas fa-cog"></i></li>
+                <li @click='logout'><i class="fas fa-sign-out-alt"></i></li>
               </ul>
               <router-link :to="{ name: 'SignIn'}" v-else id='mypage-menu-signin'>サインイン</router-link>
             </div>
