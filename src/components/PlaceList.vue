@@ -36,7 +36,7 @@
         <p v-else>まだ場所が登録されていません!登録してください!</p>
       </div>
       <div class='form' v-show='currentUserUID == pageUID'>
-        <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search">
+        <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search" id='map'>
         <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='placeData.description'></textarea>
         <input type="text" name="url" placeholder="Google MapやホームページのURL(任意)" id="url" v-model='placeData.url'>
         <p v-on:click='addNewPlace' class='btn'>登録</p>
@@ -67,12 +67,12 @@ export default {
       listID: null,
       pageUserName: null,
       currentUserUID: null,
+      defaultPhotoUrl: 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e',
       placeData: {
         'placeID': null,
         'description': null,
         'createdAt': null,
         'name': null,
-        'photoUrl': null,
         'types': [],
         'url': null
       },
@@ -98,7 +98,7 @@ export default {
     window.initMap = () => {
       var options = {
         componentRestrictions: { country: "jp" },
-        fields: ["name", "place_id", "url", "photo", "type", 'reviews'],
+        fields: ["name", "place_id", "url", "type", 'reviews'],
         types: ["establishment"],
         language: 'ja'
       }
@@ -109,12 +109,6 @@ export default {
         self.placeData.name = place.name
         self.placeData.placeID = place.place_id
         self.placeData.url = place.url
-
-        if (place.photos && place.photos.length != 0) {
-          self.placeData.photoUrl = place.photos[0].getUrl()
-        } else {
-          self.placeData.photoUrl = 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e'
-        }
 
         if (place.types) {
           self.placeData.types = place.types.filter(n => !["point_of_interest", "establishment"].includes(n));
@@ -174,16 +168,32 @@ export default {
         });
         const listedUsersDuplicatesDropped = listedUsers.filter(function (x, i, self) {
             return self.indexOf(x) === i;
-        });
-        places.push({
-            'placeID': doc.data().placeID,
-            'description': doc.data().description,
-            'createdAt': doc.data().createdAt,
-            'name': doc.data().name,
-            'photoUrl': doc.data().photoUrl,
-            'types': doc.data().types,
-            'url': doc.data().url,
-            'listedCount': listedUsersDuplicatesDropped.length
+        })
+
+        // places apiで画像のURLを取得する
+        const map = document.getElementById('map')
+        const service = new google.maps.places.PlacesService(map)
+        service.getDetails({
+            placeId: doc.data().placeID,
+            fields: ['photos']
+        }, function(place, status) {
+            let photoUrl = ''
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                photoUrl = place.photos[0].getUrl()
+            } else {
+                photoUrl = self.defaultPhotoUrl
+            }
+
+            places.push({
+              'placeID': doc.data().placeID,
+              'description': doc.data().description,
+              'createdAt': doc.data().createdAt,
+              'name': doc.data().name,
+              'photoUrl': photoUrl,
+              'types': doc.data().types,
+              'url': doc.data().url,
+              'listedCount': listedUsersDuplicatesDropped.length
+          })
         })
       })
       self.places = places

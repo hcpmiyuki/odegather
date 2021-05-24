@@ -263,8 +263,6 @@ export default {
       await this.axios.get(this.apiUrl, {params: {'user_id': UID, 'recommend_user_count': recommend_user_count}})
       .then(res => {
         if ( res.status == 200){
-          console.log(200)
-          console.log(res.data.results)
           // すでにフォローしている人と自分は表示しない
           const filterUsers = this.currentUserData.follows + [UID]
           recommendedUsers = res.data.results.filter(i => filterUsers.indexOf(i) == -1)
@@ -281,7 +279,7 @@ export default {
     getRecommendedUsersData: async function (recommendedUsers) {
       const self = this
 
-      const showRecommendedUsers = recommendedUsers.slice(1, 4)
+      const showRecommendedUsers = recommendedUsers.slice(0, 3)
 
       self.showRecommendedUsersData = []
       if (showRecommendedUsers.length != 0) {
