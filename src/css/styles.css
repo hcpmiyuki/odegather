@@ -104,6 +104,10 @@ body,html{
     font-size: 16px;
 }
 
+.description {
+    word-break: break-all;
+}
+
 /* メニュー固定 */
 #menu{
     width: 100%;

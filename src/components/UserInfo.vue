@@ -46,7 +46,7 @@
           </div>
         
         <div id='user-description' v-show="pageUserData.description">
-          <p>{{pageUserData.description}}</p>
+          <p class="description">{{pageUserData.description}}</p>
         </div>
         
         <div id="user-recommend" v-show="showRecommendedUsersData">
