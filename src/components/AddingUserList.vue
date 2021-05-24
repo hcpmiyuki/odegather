@@ -54,17 +54,23 @@ export default {
       const self = this
       var placeDocs = await db.collectionGroup('places').where('placeID', '==', self.placeID).get()
       var users = []
+      let memo = []
 
       placeDocs.forEach( async function (doc) {
         self.placeName = doc.data().name
         var userID = doc.ref.parent.parent.parent.parent.id
         var userDoc = await db.collection('users').doc(userID).get()
-        users.push({
-          'userID': userDoc.id,
-          'description': userDoc.data().description,
-          'imageName': userDoc.data().imageName,
-          'screenName': userDoc.data().screenName
-        })
+        
+        if (!!memo.indexOf(userDoc.id)) {
+          users.push({
+            'userID': userDoc.id,
+            'description': userDoc.data().description,
+            'imageName': userDoc.data().imageName,
+            'screenName': userDoc.data().screenName
+          })
+          memo.push(userDoc.id)
+        }
+        
       })
 
       return users

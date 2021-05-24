@@ -168,8 +168,13 @@ export default {
       var placesDocs = await listDoc.ref.collection('places').orderBy('createdAt', 'desc').get()
       var places = []
       placesDocs.forEach(async function (doc) {
-        var placeDocRefs = await db.collectionGroup('places').where('placeID', '==', doc.id).get()
-
+        var placeDocs = await db.collectionGroup('places').where('placeID', '==', doc.id).get()
+        const listedUsers = placeDocs.docs.map(doc => {
+          return doc.ref.path.split('/')[1]
+        });
+        const listedUsersDuplicatesDropped = listedUsers.filter(function (x, i, self) {
+            return self.indexOf(x) === i;
+        });
         places.push({
             'placeID': doc.data().placeID,
             'description': doc.data().description,
@@ -178,7 +183,7 @@ export default {
             'photoUrl': doc.data().photoUrl,
             'types': doc.data().types,
             'url': doc.data().url,
-            'listedCount': placeDocRefs.size
+            'listedCount': listedUsersDuplicatesDropped.length
         })
       })
       self.places = places
