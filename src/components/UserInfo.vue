@@ -50,7 +50,7 @@
         </div>
         
         <div id="user-recommend" v-show="showRecommendedUsersData">
-          <p>あなたにおすすめのユーザー</p>
+          <p>{{ userReccomendMsg }}</p>
           <div class='recommended_users'>
             <div v-for="user in showRecommendedUsersData" :key="user.userID" class="recommended_user">
               <div class="trim">
@@ -118,9 +118,8 @@ export default {
       unFollowBtnShow: false,
       showUserInfoEditModal: false,
       apiUrl:'https://portfolio-310607.uc.r.appspot.com/reccomend-users',
-      recommendedUsers: [],
-      showRecommendedUsers: [],
-      showRecommendedUsersData: null
+      showRecommendedUsersData: null,
+      userReccomendMsg: null
     }
   },
   components: {
@@ -151,8 +150,8 @@ export default {
     }
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
-
-      await this.getRecommendedUsersData(this.currentUserUID)
+      const recommendedUsers = await self.getRecommendedUsers(self.currentUserUID)
+      this.getRecommendedUsersData(recommendedUsers)
     }
   },
   methods: {
@@ -263,24 +262,30 @@ export default {
       let recommendedUsers = []
       await this.axios.get(this.apiUrl, {params: {'user_id': UID, 'recommend_user_count': recommend_user_count}})
       .then(res => {
-        // すでにフォローしている人は表示しない
-        recommendedUsers = res.data.results.filter(i => this.currentUserData.follows.indexOf(i) == -1)
+        if ( res.status == 200){
+          console.log(200)
+          console.log(res.data.results)
+          // すでにフォローしている人と自分は表示しない
+          const filterUsers = this.currentUserData.follows + [UID]
+          recommendedUsers = res.data.results.filter(i => filterUsers.indexOf(i) == -1)
+          this.userReccomendMsg = 'あなたにおすすめのユーザー'
+        }
       })
       .catch(error => {
-        console.error(error)
+        this.userReccomendMsg = 'だれかをフォローしましょう!'
+        // console.error(error)
       })
 
       return recommendedUsers
     },
-    getRecommendedUsersData: async function (UID) {
+    getRecommendedUsersData: async function (recommendedUsers) {
       const self = this
-      const recommendedUsers = await self.getRecommendedUsers(UID)
-      self.showRecommendedUsers = recommendedUsers.slice(1, 4)
-      self.recommendedUsers = recommendedUsers.slice(4,)
 
-      if (self.showRecommendedUsers.length != 0) {
-        self.showRecommendedUsersData = []
-        const userDocs = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', self.showRecommendedUsers).get()
+      const showRecommendedUsers = recommendedUsers.slice(1, 4)
+
+      self.showRecommendedUsersData = []
+      if (showRecommendedUsers.length != 0) {
+        const userDocs = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', showRecommendedUsers).get()
         userDocs.forEach(async function (doc) {
           self.showRecommendedUsersData.unshift({
             'userID': doc.id,
@@ -288,8 +293,15 @@ export default {
             'imageName': doc.data().imageName,
           })
         })
+      } else {
+        const userDocs = await db.collection('users').get()
+        const allUsers = userDocs.docs.map(doc => {
+          return doc.id
+        });
+        const filterUsers = this.currentUserData.follows + [this.currentUserUID]
+        const candidateUsers = allUsers.filter(i => filterUsers.indexOf(i) == -1)
+        await self.getRecommendedUsersData(candidateUsers)
       }
-      
     },
     logout: function () {
       firebase.auth().signOut().then(() => {
@@ -297,6 +309,21 @@ export default {
       }).catch((error) => {
         console.error('ログアウトに失敗')
       })
+    },
+    randomSelect: function (array, num) {
+      let newArray = [];
+      
+      while(newArray.length < num && array.length > 0)
+      {
+        // 配列からランダムな要素を選ぶ
+        const rand = Math.floor(Math.random() * array.length);
+        // 選んだ要素を別の配列に登録する
+        newArray.push(array[rand]);
+        // もとの配列からは削除する
+        array.splice(rand, 1);
+      }
+      
+      return newArray;
     }
   }
 }
