@@ -23,7 +23,7 @@
                 <ul>
                   <li v-if="place.types.length != 0">{{ place.types.join() }}</li>
                   <li v-else>カテゴリ不明</li>
-                  <li>{{ place.description }}</li>
+                  <li class="description">{{ place.description }}</li>
                 </ul>
               </div>
             </div>

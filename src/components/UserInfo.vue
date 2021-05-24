@@ -323,6 +323,11 @@ export default {
       
       return newArray;
     }
+  },
+  beforeRouteUpdate: async function (to, from, next) {
+    console.log('hoge')
+    next()
+    this.$router.go({path: this.$router.currentRoute.path, force: true})
   }
 }
 </script>
