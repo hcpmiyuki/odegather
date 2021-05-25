@@ -1,8 +1,8 @@
 <template>
-    <div>
+    <div class='header-menu'>
         <ul id='menu'>
-        <li><i class="fas fa-home"></i></li>
-        <li><i class="fas fa-comment-dots"></i></li>
+        <!-- <li><i class="fas fa-home"></i></li> -->
+        <!-- <li><i class="fas fa-comment-dots"></i></li> -->
         <li><router-link :to="{ name: 'ListList', params: { uid: currentUserUID }}"><i class="fas fa-list"></i></router-link></li>
         <li><router-link :to="{ name: 'UserInfo', params: { uid: currentUserUID }}"><i class="fas fa-user"></i></router-link></li>
         </ul>
