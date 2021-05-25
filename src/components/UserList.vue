@@ -40,9 +40,6 @@ export default {
       if (user) {
         // User is signed in.
         self.currentUserUID = user.uid
-      } else {
-        // No user is signed in.
-        console.log('ログインしていない')
       }
 		})
 	}

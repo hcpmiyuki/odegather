@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class='wrapper'>
-      <div>
+      <div id='mypage-menu'>
         <a v-on:click = "back" class='back-btn'><<</a>
         <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
       </div>
@@ -13,13 +13,13 @@
           <li v-for='(list, index) in lists' :key='index'>
           <p class='name'><router-link :to="{ name: 'PlaceList', params: { listID: list.id, uid: pageUID}}">{{ list.name }}</router-link></p>
           <p class='description'>{{ list.description }}</p>
-          <div class='btn_area'>
+          <div class='btn_area' v-show='currentUserUID==pageUID'>
             <a v-on:click='deleteList(list.id)'><i class="fas fa-trash-alt"></i></a>
             <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a>
           </div>
           </li>
         </ul>
-        <p v-else>まだリストが作成されていません!作成してください!</p>
+        <p v-else>まだリストが作成されていません!</p>
       </div>
       <div class='form' v-show='currentUserUID == pageUID'>
         <input type='text' name='placeName' placeholder='リスト名(必須)' autocomplete='off' v-model='listName'>
@@ -70,26 +70,24 @@ export default {
       if (user) {
         // User is signed in.
         self.currentUserUID = user.uid
-      } else {
-        // No user is signed in.
-        console.log('ログインしていない')
       }
     })
   },
   methods: {
     getLists: async function (UID) {
+      const self = this
       var lists = []
       var userDoc = await db.collection('users').doc(UID).get()
       if (userDoc.data().screenName) {
-        this.pageUserName = userDoc.data().screenName
+        self.pageUserName = userDoc.data().screenName
       }else{
-        this.pageUserName = '名無しさん'
+        self.pageUserName = '名無しさん'
       }
       var listDocs = await userDoc.ref.collection('lists').orderBy('createdAt', 'desc').get()
       listDocs.forEach((doc) => {
         lists.push({'name': doc.data().name, 'description': doc.data().description, 'id': doc.id})
       })
-      this.lists = lists
+      self.lists = lists
     },
     addNewList: function () {
       const self = this
@@ -121,6 +119,15 @@ export default {
           console.error(error);
       });
     }
+  },
+  beforeRouteUpdate: async function (to, from, next) {
+    const self = this
+    self.lists = []
+    self.showShareModal = false
+    console.log('hoge')
+    next()
+    self.pageUID = self.$route.params.uid
+    self.getLists(self.pageUID)
   }
 }
 </script>

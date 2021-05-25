@@ -73,7 +73,7 @@ body,html{
 
 .list{
     width: 95%;
-    margin: 20px auto;  
+    margin: 20px auto 50px auto;
 }
 
 .list li{
@@ -191,4 +191,16 @@ body,html{
   .modal-default-button{
     color: var(--accent-color);
     font-size: 27px;
+  }
+
+#mypage-menu{
+    grid-row: 1;
+    grid-column: 1 / 4;
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+    color: var(--sub-color);
+}
+
+#mypage-menu-signin{
+    grid-column: 4 / 5;
   }

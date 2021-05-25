@@ -1,13 +1,13 @@
 <template>
   <div>
     <div class="wrapper">
-      <div>
+      <div id='mypage-menu'>
         <a v-on:click = "back" class='back-btn'><<</a>
         <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
       </div>
       <div class='title-header'>
         <h1>{{ listData.name }}</h1>
-        <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a>
+        <a v-on:click='showShareModal=true, shareListName=list.name' v-show='currentUserUID==pageUID'><i class="fas fa-share-alt"></i></a>
       </div>
       <div class='list place'>
         <ul v-if='places.length'>
@@ -29,11 +29,11 @@
             </div>
             <div class='btn_area'>
               <a :href='place.url' target="_brank"><i class="fas fa-map-marked-alt"></i></a>
-              <a v-on:click='deletePlace(place.placeID)'><i class="fas fa-trash-alt"></i></a>
+              <a v-on:click='deletePlace(place.placeID)' v-show='currentUserUID==pageUID'><i class="fas fa-trash-alt"></i></a>
             </div>
           </li>
         </ul>
-        <p v-else>まだ場所が登録されていません!登録してください!</p>
+        <p v-else>まだリストが作成されていません!</p>
       </div>
       <div class='form' v-show='currentUserUID == pageUID'>
         <input type='text' name='placeName' placeholder='いきたい場所(必須)' autocomplete='off' v-model='placeData.name' ref="search" id='map'>
@@ -82,7 +82,7 @@ export default {
         'name': null,
         'createdAt': null
       },
-      showShareModal: false
+      showShareModal: false,
     }
   },
   components: {
@@ -135,9 +135,6 @@ export default {
       if (user) {
         // User is signed in.
         self.currentUserUID = user.uid
-      } else {
-        // No user is signed in.
-        console.log('ログインしていない')
       }
     })
   },
@@ -197,7 +194,6 @@ export default {
         })
       })
       self.places = places
-
     },
     addNewPlace: async function () {
       const self = this
@@ -286,8 +282,9 @@ img{
     font-size: 18px;
 }
 
-a,li{
+#place-list-content a,#place-list-content li{
   font-size: 12px;
+  word-break: break-all;
 }
 
 #place-list-content li{

@@ -12,7 +12,7 @@
                 <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>
                 <li @click='logout'><i class="fas fa-sign-out-alt"></i></li>
               </ul>
-              <router-link :to="{ name: 'SignIn'}" v-else id='mypage-menu-signin'>サインイン</router-link>
+              <router-link :to="{ name: 'SignIn'}" v-if="!currentUserUID" id='mypage-menu-signin'>サインイン</router-link>
             </div>
             <div id='user-header-image'>
               <div class="trim">
@@ -131,17 +131,13 @@ export default {
     self.pageUID = self.$route.params.uid
     self.pageUserData = await self.getUserData(self.pageUID)
 
-    await firebase.auth().onAuthStateChanged(function (user) {
+    await firebase.auth().onAuthStateChanged(async function (user) {
       if (user) {
         // User is signed in.
         self.currentUserUID = user.uid
-      } else {
-        // No user is signed in.
-        console.log('ログインしていない')
+        self.currentUserData = await self.getUserData(self.currentUserUID)
       }
     })
-
-    self.currentUserData = await self.getUserData(self.currentUserUID)
 
     if (self.pageUID && self.currentUserUID　&& !self.currentUserData.follows.includes(self.pageUID) && self.pageUID !== self.currentUserUID) {
       self.followBtnShow = true
@@ -325,9 +321,37 @@ export default {
     }
   },
   beforeRouteUpdate: async function (to, from, next) {
-    console.log('hoge')
+    const self = this
+    self.followBtnShow = false
+    self.unFollowBtnShow = false
+    self.showUserInfoEditModal = false
+    self.showRecommendedUsersData = null
+    self.userReccomendMsg = null
+    self.pageUserData = {
+      'userID': null,
+      'description': null,
+      'imageName': null,
+      'follows': [],
+      'followsCount':null,
+      'followersCount':null,
+      'followers': [],
+      'screenName': null
+    }
     next()
-    this.$router.go({path: this.$router.currentRoute.path, force: true})
+    
+    self.pageUID = self.$route.params.uid
+    self.pageUserData = await self.getUserData(self.pageUID)
+
+    if (self.pageUID && self.currentUserUID　&& !self.currentUserData.follows.includes(self.pageUID) && self.pageUID !== self.currentUserUID) {
+      self.followBtnShow = true
+    } else if (self.pageUID !== self.currentUserUID){
+      self.unFollowBtnShow = true
+    }
+
+    if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
+      const recommendedUsers = await self.getRecommendedUsers(self.currentUserUID)
+      this.getRecommendedUsersData(recommendedUsers)
+    }
   }
 }
 </script>
@@ -342,13 +366,13 @@ export default {
   grid-template-columns: 34% 33% 33%;
 }
 
-#mypage-menu{
+/* #mypage-menu{
   grid-row: 1;
   grid-column: 1 / 4;
   display: grid;
   grid-template-columns: 25% 25% 25% 25%;
   color: var(--sub-color);
-}
+} */
 
 #user-header-image{
   grid-row: 2;
@@ -466,7 +490,5 @@ export default {
     font-size: 21px;
 }
 
-#mypage-menu-signin{
-  grid-column: 4 / 5;
-}
+
 </style>
