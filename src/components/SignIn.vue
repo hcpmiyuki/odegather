@@ -24,9 +24,10 @@ export default {
   },
   methods: {
     signIn: function () {
-      firebase.auth().signInWithEmailAndPassword(this.email, this.password)
+      const self = this
+      firebase.auth().signInWithEmailAndPassword(self.email, self.password)
         .then(res => {
-          this.$router.push({ path: `/userinfo/${res.user.uid}` })
+          self.$router.push({ path: `/userinfo/${res.user.uid}` })
         })
         .catch((error) => {
           // エラー時の処理

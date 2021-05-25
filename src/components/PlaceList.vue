@@ -6,8 +6,13 @@
         <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
       </div>
       <div class='title-header'>
+        <a id='username'>
+          <router-link :to="{ name: 'UserInfo', params: { uid: pageUID }}">
+            {{ pageUserName }}
+          </router-link>の
+        </a><br>
         <h1>{{ listData.name }}</h1>
-        <a v-on:click='showShareModal=true, shareListName=list.name' v-show='currentUserUID==pageUID'><i class="fas fa-share-alt"></i></a>
+        <a v-on:click='showShareModal=true' v-show='currentUserUID==pageUID'><i class="fas fa-share-alt"></i></a>
       </div>
       <div class='list place'>
         <ul v-if='places.length'>
@@ -91,21 +96,21 @@ export default {
   },
   mounted: function () {
     const self = this
-    let script = document.createElement('script');
+    const script = document.createElement('script');
     script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBcqg8IvzQPSelMZU-C15rJwUIE6o481R4&libraries=places&callback=initMap';
     script.async = true;
     document.head.appendChild(script);
     window.initMap = () => {
-      var options = {
+      const options = {
         componentRestrictions: { country: "jp" },
         fields: ["name", "place_id", "url", "type", 'reviews'],
         types: ["establishment"],
         language: 'ja'
       }
 
-      let autocomplete = new window.google.maps.places.Autocomplete(this.$refs.search, options);
+      const autocomplete = new window.google.maps.places.Autocomplete(self.$refs.search, options);
       autocomplete.addListener("place_changed", function() {
-        var place = autocomplete.getPlace()
+        const place = autocomplete.getPlace()
         self.placeData.name = place.name
         self.placeData.placeID = place.place_id
         self.placeData.url = place.url
@@ -142,12 +147,12 @@ export default {
     getPlaces: async function () {
       const self = this
 
-      let userRef = db.collection('users')
+      const userRef = db.collection('users')
       .doc(self.pageUID)
-      let userDoc = await userRef.get()
+      const userDoc = await userRef.get()
       self.pageUserName = userDoc.data().screenName
 
-      var listDoc = await userRef.collection('lists')
+      const listDoc = await userRef.collection('lists')
       .doc(self.listID)
       .get()
       
@@ -156,10 +161,10 @@ export default {
       self.listData['name'] = listDoc.data().name
       self.listData['createdAt'] = listDoc.data().createdAt
     
-      var placesDocs = await listDoc.ref.collection('places').orderBy('createdAt', 'desc').get()
-      var places = []
+      const placesDocs = await listDoc.ref.collection('places').orderBy('createdAt', 'desc').get()
+      let places = []
       placesDocs.forEach(async function (doc) {
-        var placeDocs = await db.collectionGroup('places').where('placeID', '==', doc.id).get()
+        const placeDocs = await db.collectionGroup('places').where('placeID', '==', doc.id).get()
         const listedUsers = placeDocs.docs.map(doc => {
           return doc.ref.path.split('/')[1]
         });
@@ -207,8 +212,8 @@ export default {
       //   .catch(function(error) {
       //     console.error(error);
       //   })
-        let placeDoRef = db.doc(self.listDocPath).collection('places').doc(self.placeData.placeID)
-        let allPlaceDoc = await db.collection('all_places').doc(self.placeData.placeID).get()
+        const placeDoRef = db.doc(self.listDocPath).collection('places').doc(self.placeData.placeID)
+        const allPlaceDoc = await db.collection('all_places').doc(self.placeData.placeID).get()
 
         try {
           const batch = db.batch()
@@ -216,8 +221,8 @@ export default {
           await batch.set( placeDoRef, self.placeData)
           
           if (!allPlaceDoc.exists) {
-            let allPlaceDocRef = db.collection('all_places').doc(self.placeData.placeID)
-            let placeData = {
+            const allPlaceDocRef = db.collection('all_places').doc(self.placeData.placeID)
+            const placeData = {
               'placeID': self.placeData.placeID,
               'reviews': self.placeData.reviews,
               'types': self.placeData.types,
@@ -252,9 +257,9 @@ export default {
       });
     }
     // showUserList: async function (placeID) {
-    //   var placeDocs = await db.collectionGroup('places').where('placeID', '==', placeID).get()
+    //   const placeDocs = await db.collectionGroup('places').where('placeID', '==', placeID).get()
     //   placeDocs.forEach( function (doc) {
-    //     var userID = doc.ref.parent.parent.parent.parent.id
+    //     const userID = doc.ref.parent.parent.parent.parent.id
     //   })
     // }
   }
@@ -307,4 +312,13 @@ img{
   color: var(--accent-color);
 }
 
+.title-header #username a,.title-header #username{
+  font-size: 15px;
+  color: var(--main-color);
+  padding-left: 3px;
+}
+
+.title-header #username a{
+  font-weight: bolder;
+}
 </style>

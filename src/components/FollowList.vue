@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="wrapper">
-      <div>
+      <div id='mypage-menu'>
         <a v-on:click = "back" class='back-btn'><<</a>
         <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
       </div>
@@ -65,11 +65,11 @@ export default {
   },methods: {
     getUsers: async function (UID, collectionName='follows') {
       const self = this
-      var userDocRef = db.collection('users').doc(UID)
-      var userDocs = await userDocRef.collection(collectionName).get()
+      const userDocRef = db.collection('users').doc(UID)
+      const userDocs = await userDocRef.collection(collectionName).get()
       let users = []
       userDocs.forEach(async function (doc) {
-        let userDoc = await db.collection('users').doc(doc.id).get()
+        const userDoc = await db.collection('users').doc(doc.id).get()
         users.push({
           'userID': userDoc.id,
           'imageName': userDoc.data().imageName,
@@ -82,13 +82,14 @@ export default {
   },
   computed: {
     switchTab: function () {
-      console.log('hoge')
-      return this.followShowFlag = this.$route.params.follow_flag
+      const self = this
+      return self.followShowFlag = self.$route.params.follow_flag
     },
     classColorSet: function(){
-      if (this.$route.params.follow_flag == 'follow') {
+      const self = this
+      if (self.$route.params.follow_flag == 'follow') {
         return true
-      } else if (this.$route.params.follow_flag == 'follower') {
+      } else if (self.$route.params.follow_flag == 'follower') {
         return false
       }
   　}
@@ -113,13 +114,20 @@ export default {
     text-align: center;
     cursor: pointer;
     background: #eee;
-    transition: 0.3s;
+    transition: 0.3s; 
     border-radius: 10px 10px 0 0;
+}
+
+#tabs a,#tabs a:visited {
+    color: var(--sub-color)
+}
+
+#tabs .isActive a,#tabs .isActive a:visited{
+    color: #fff;
 }
  
 #tabs .isActive{
     background: var(--accent-color);
-    color: #fff;
 }
 
 .ff-list{

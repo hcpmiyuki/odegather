@@ -28,17 +28,18 @@ export default {
   },
   methods: {
     signUp: function () {
-      if (this.name) {
-        firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
+      const self = this
+      if (self.name) {
+        firebase.auth().createUserWithEmailAndPassword(self.email, self.password)
           .then((res) => {
             db.collection('users').doc(res.user.uid).set({
-              screenName: this.name,
+              screenName: self.name,
               imageName: 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e',
               description: null,
               createdAt: new Date()
             })
               .then(
-                this.$router.push({ path: `/userinfo/${res.user.uid}` })
+                self.$router.push({ path: `/userinfo/${res.user.uid}` })
               )
               .catch((error) => {
                 // エラー時の処理

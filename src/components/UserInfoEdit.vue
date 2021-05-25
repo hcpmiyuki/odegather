@@ -39,15 +39,17 @@ export default {
     }
   },
   created: function () {
-    this.userData.screenName = this.screenName
-    this.userData.userID = this.userID
-    this.userData.description = this.description
-    this.userData.imageName = this.imageName
+    const self = this
+    self.userData.screenName = self.screenName
+    self.userData.userID = self.userID
+    self.userData.description = self.description
+    self.userData.imageName = self.imageName
   },
   methods: {
     onFileUpload: function (file) {
+      const self = this
       const files = file.target.files || file.dataTransfer.files;
-      const fileType = this.getFileType(files[0].name)
+      const fileType = self.getFileType(files[0].name)
 
       if (!fileType) {
         this['flash/setFlash']({
@@ -56,13 +58,12 @@ export default {
         })
       }
 
-      let filename = `${this.userData.userID}${Date.parse(new Date())}.${fileType}`.replace(/([\s\:\-])/g, '')
+      let filename = `${self.userData.userID}${Date.parse(new Date())}.${fileType}`.replace(/([\s\:\-])/g, '')
       const storageRef = storage.ref(`userImages/${filename}`)
       const uploadTask = storageRef.put(files[0])
       uploadTask.on('state_changed', 
           snapshot => {
             const percentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            this.fileLoading = percentage
           },
           err => {
             console.log(err)
@@ -73,20 +74,19 @@ export default {
           },
           () => {
             uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
-              this.fileLoading = 0
-              this.userData.imageName = downloadURL
+              self.userData.imageName = downloadURL
             })
           }
         )
     },
     getFileType: function (filename) {
-      var pos = filename.lastIndexOf('.');
+      const self = this
+      const pos = filename.lastIndexOf('.');
       if (pos === -1) return '';
       return filename.slice(pos + 1);
     },
     editUserInfo: function () {
       const self = this
-
       if (!self.userData.screenName){
         self.userData.screenName = '名無し'
       }
@@ -95,7 +95,7 @@ export default {
         self.userData.imageName = 'https://firebasestorage.googleapis.com/v0/b/portfolio-310607.appspot.com/o/userImages%2Fdefault-icon.jpg?alt=media&token=7de5fff0-c63d-40a6-974a-7a55fd62aa6e'
       }
 
-      var newUserRef = db.collection('users').doc(self.userData.userID);
+      const newUserRef = db.collection('users').doc(self.userData.userID);
         newUserRef.update({
           screenName: self.userData.screenName,
           imageName: self.userData.imageName,

@@ -6,7 +6,14 @@
         <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
       </div>
       <div class='title-header'>
-        <h1>{{ pageUserName }}のリスト</h1>
+        <h1>
+          <router-link :to="{ name: 'UserInfo', params: { uid: pageUID }}">
+            {{ pageUserName }}
+          </router-link>
+          のリスト
+        </h1>
+
+        <a v-on:click='showShareModal=true, shareListName=null' v-show='currentUserUID==pageUID'><i class="fas fa-share-alt"></i></a>
       </div>
       <div class='list'>
         <ul v-if='lists.length'>
@@ -15,14 +22,14 @@
           <p class='description'>{{ list.description }}</p>
           <div class='btn_area' v-show='currentUserUID==pageUID'>
             <a v-on:click='deleteList(list.id)'><i class="fas fa-trash-alt"></i></a>
-            <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a>
+            <!-- <a v-on:click='showShareModal=true, shareListName=list.name'><i class="fas fa-share-alt"></i></a> -->
           </div>
           </li>
         </ul>
         <p v-else>まだリストが作成されていません!</p>
       </div>
       <div class='form' v-show='currentUserUID == pageUID'>
-        <input type='text' name='placeName' placeholder='リスト名(必須)' autocomplete='off' v-model='listName'>
+        <input type='text' name='placeName' placeholder='リスト名(必須)' autocompconste='off' v-model='listName'>
         <textarea name='description' rows=4 placeholder='説明(任意 最大100字)' maxlength='100' v-model='listDescription'></textarea>
         <p v-on:click='addNewList' class='btn'>登録</p>
       </div>
@@ -76,14 +83,14 @@ export default {
   methods: {
     getLists: async function (UID) {
       const self = this
-      var lists = []
-      var userDoc = await db.collection('users').doc(UID).get()
+      let lists = []
+      const userDoc = await db.collection('users').doc(UID).get()
       if (userDoc.data().screenName) {
         self.pageUserName = userDoc.data().screenName
       }else{
         self.pageUserName = '名無しさん'
       }
-      var listDocs = await userDoc.ref.collection('lists').orderBy('createdAt', 'desc').get()
+      const listDocs = await userDoc.ref.collection('lists').orderBy('createdAt', 'desc').get()
       listDocs.forEach((doc) => {
         lists.push({'name': doc.data().name, 'description': doc.data().description, 'id': doc.id})
       })
@@ -92,7 +99,7 @@ export default {
     addNewList: function () {
       const self = this
       if (self.listName) {
-        var newListRef = db.collection('users').doc(self.currentUserUID).collection('lists').doc();
+        const newListRef = db.collection('users').doc(self.currentUserUID).collection('lists').doc();
         newListRef.set({
           documentID: newListRef.id,
           name: self.listName,
@@ -133,11 +140,25 @@ export default {
 </script>
 
 <style scoped>
-.title-header{
+.title-header h1, .title-header h1 a{
   color: var(--main-color);
+}
+.title-header h1 a {
+  font-weight:800;
 }
 
 .list .description{
   font-size: 12px
+}
+
+.title-header h1{
+  display: inline;
+  font-weight:400;
+}
+
+.title-header a{
+  font-size: 32px;
+  padding-left: 15px;
+  color: var(--accent-color);
 }
 </style>

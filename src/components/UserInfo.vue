@@ -34,8 +34,8 @@
                 フォロワー
               </a>
               <div id='btn-area'>
-                <p v-if="followBtnShow" class='btn follow' v-on:click='followUser'>フォローする</p>
-                <p v-if="unFollowBtnShow" class='btn follow' v-on:click='unFollowUser'>フォロー解除</p>
+                <p v-if="followBtnShow && currentUserUID" class='btn follow' v-on:click='followUser'>フォローする</p>
+                <p v-if="unFollowBtnShow && currentUserUID" class='btn follow' v-on:click='unFollowUser'>フォロー解除</p>
                 <p class='btn list'>
                   <router-link :to="{ name: 'ListList', params: { uid: pageUserData.userID}}">
                   リストを見る
@@ -131,23 +131,28 @@ export default {
     self.pageUID = self.$route.params.uid
     self.pageUserData = await self.getUserData(self.pageUID)
 
-    await firebase.auth().onAuthStateChanged(async function (user) {
+    await firebase.auth().onAuthStateChanged(function (user) {
       if (user) {
         // User is signed in.
         self.currentUserUID = user.uid
-        self.currentUserData = await self.getUserData(self.currentUserUID)
       }
     })
 
+    if (self.currentUserUID) {
+      self.currentUserData = await self.getUserData(self.currentUserUID)
+    }
+
     if (self.pageUID && self.currentUserUID　&& !self.currentUserData.follows.includes(self.pageUID) && self.pageUID !== self.currentUserUID) {
+      
       self.followBtnShow = true
+      console.log(self.currentUserData.follows)
     } else if (self.pageUID !== self.currentUserUID){
       self.unFollowBtnShow = true
     }
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
       const recommendedUsers = await self.getRecommendedUsers(self.currentUserUID)
-      this.getRecommendedUsersData(recommendedUsers)
+      self.getRecommendedUsersData(recommendedUsers)
     }
   },
   methods: {
@@ -235,8 +240,8 @@ export default {
     },
     getFollows: async function (UID) {
       const self = this
-      var userDocRef = db.collection('users').doc(UID)
-      var followDocs = await userDocRef.collection('follows').get()
+      const userDocRef = db.collection('users').doc(UID)
+      const followDocs = await userDocRef.collection('follows').get()
       let follows = []
       followDocs.forEach(function (doc) {
         follows.push(doc.id)
@@ -245,8 +250,8 @@ export default {
     },
     getFollowers: async function (UID) {
       const self = this
-      var userDocRef = db.collection('users').doc(UID)
-      var followerDocs = await userDocRef.collection('followers').get()
+      const userDocRef = db.collection('users').doc(UID)
+      const followerDocs = await userDocRef.collection('followers').get()
       let followers = []
       followerDocs.forEach(function (doc) {
         followers.push(doc.id)
@@ -254,19 +259,20 @@ export default {
       return followers
     },
     getRecommendedUsers: async function (UID) {
-      const recommend_user_count = this.currentUserData.followsCount < 2 ? 5 : this.currentUserData.followsCount*2+1
+      const self = this
+      const recommend_user_count = self.currentUserData.followsCount < 2 ? 5 : self.currentUserData.followsCount*2+1
       let recommendedUsers = []
-      await this.axios.get(this.apiUrl, {params: {'user_id': UID, 'recommend_user_count': recommend_user_count}})
+      await self.axios.get(self.apiUrl, {params: {'user_id': UID, 'recommend_user_count': recommend_user_count}})
       .then(res => {
         if ( res.status == 200){
           // すでにフォローしている人と自分は表示しない
-          const filterUsers = this.currentUserData.follows + [UID]
+          const filterUsers = self.currentUserData.follows + [UID]
           recommendedUsers = res.data.results.filter(i => filterUsers.indexOf(i) == -1)
-          this.userReccomendMsg = 'あなたにおすすめのユーザー'
+          self.userReccomendMsg = 'あなたにおすすめのユーザー'
         }
       })
       .catch(error => {
-        this.userReccomendMsg = 'だれかをフォローしましょう!'
+        self.userReccomendMsg = 'だれかをフォローしましょう!'
         // console.error(error)
       })
 
@@ -274,7 +280,6 @@ export default {
     },
     getRecommendedUsersData: async function (recommendedUsers) {
       const self = this
-
       const showRecommendedUsers = recommendedUsers.slice(0, 3)
 
       self.showRecommendedUsersData = []
@@ -292,19 +297,21 @@ export default {
         const allUsers = userDocs.docs.map(doc => {
           return doc.id
         });
-        const filterUsers = this.currentUserData.follows + [this.currentUserUID]
+        const filterUsers = self.currentUserData.follows + [self.currentUserUID]
         const candidateUsers = allUsers.filter(i => filterUsers.indexOf(i) == -1)
         await self.getRecommendedUsersData(candidateUsers)
       }
     },
     logout: function () {
+      const self = this
       firebase.auth().signOut().then(() => {
-        this.$router.push('/')
+        self.$router.push('/')
       }).catch((error) => {
         console.error('ログアウトに失敗')
       })
     },
     randomSelect: function (array, num) {
+      const self = this
       let newArray = [];
       
       while(newArray.length < num && array.length > 0)
@@ -350,7 +357,7 @@ export default {
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
       const recommendedUsers = await self.getRecommendedUsers(self.currentUserUID)
-      this.getRecommendedUsersData(recommendedUsers)
+      self.getRecommendedUsersData(recommendedUsers)
     }
   }
 }

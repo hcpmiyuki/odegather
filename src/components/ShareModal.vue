@@ -52,16 +52,22 @@ export default {
     }
   },
   created: function () {
+    const self = this
     // 現在のurlをエンコード
-    var url = encodeURIComponent(location.href)
-    this.currentPageUrl = location.href
+    const url = encodeURIComponent(location.href)
+    self.currentPageUrl = location.href
+    let txt = ''
     // ページ文言
-    var txt = encodeURIComponent(`${this.userName}さんの${this.listName}リスト`)
-    var hashtags = 'odegather,おでぎゃざ'
+    if (self.listName) {
+      txt = encodeURIComponent(`${self.userName}さんの${self.listName}リスト`)
+    } else {
+      txt = encodeURIComponent(`${self.userName}さんのいきたいリスト`)
+    }
+    const hashtags = 'odegather,おでぎゃざ'
     // Twitter用のurl作成
-    this.twUrl = 'https://twitter.com/intent/tweet?text=' + txt + '&hashtags=' + hashtags + '&url=' + url
+    self.twUrl = 'https://twitter.com/intent/tweet?text=' + txt + '&hashtags=' + hashtags + '&url=' + url
     // Line用のurl作成
-    this.lineUrl = `https://social-plugins.line.me/lineit/share?url=${url}`
+    self.lineUrl = `https://social-plugins.line.me/lineit/share?url=${url}`
   },
   methods: {
     onCopy: function () {
