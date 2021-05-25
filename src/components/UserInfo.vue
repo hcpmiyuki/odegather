@@ -4,9 +4,9 @@
         <div id='user-container'>
           <div id='user-header'>
             <div id='mypage-menu'>
-              <div v-show = 'currentUserUID != pageUID'>
+              <!-- <div v-show = 'currentUserUID != pageUID'>
                 <a v-on:click = "back" class='back-btn'><<</a>
-              </div>
+              </div> -->
               <ul v-if='currentUserUID == pageUID' id='mypage-menu-list'>
                 <!-- <li><i class="fas fa-bell"></i></li> -->
                 <li @click="showUserInfoEditModal = true"><i class="fas fa-pen"></i></li>

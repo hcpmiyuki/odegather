@@ -2,7 +2,7 @@
   <div>
     <div class="wrapper">
       <div id='mypage-menu'>
-        <a v-on:click = "back" class='back-btn'><<</a>
+        <!-- <a v-on:click = "back" class='back-btn'><<</a> -->
         <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
       </div>
       <div class='title-header'>
