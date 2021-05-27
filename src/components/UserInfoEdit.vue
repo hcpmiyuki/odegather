@@ -110,11 +110,15 @@ export default {
       })
     }
   }
-};
+}
 </script>
 <style>
 .trim.small{
   width:50%;
+}
+
+.modal-container .form{
+  margin: 21px auto;
 }
 
 </style>

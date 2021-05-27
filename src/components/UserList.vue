@@ -13,7 +13,12 @@
                 {{ user.screenName }}
               </router-link>
 						</p>
-            <p class='description' v-if="user.description != null">{{user.description.split('').slice(0, 20).join('') + '…'}}</p>
+            <p class='description' v-if="user.description != null && user.description.split('').length > 20">
+              {{user.description.split('').slice(0, 20).join('') + '…'}}
+            </p>
+            <p class='description' v-else>
+              {{user.description}}
+            </p>
           </div>
         </div>
       </li>
@@ -63,6 +68,6 @@ export default {
 }
 
 .list.small li .description{
-  font-size: 12px;
+  font-size: 10px;
 }
 </style>
