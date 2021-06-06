@@ -1,5 +1,5 @@
 <template>
-    <div class='header-menu'>
+    <div class='header-menu' v-show="currentUserUID">
         <ul id='menu'>
         <!-- <li><i class="fas fa-home"></i></li> -->
         <!-- <li><i class="fas fa-comment-dots"></i></li> -->
@@ -10,8 +10,23 @@
 </template>
 
 <script>
+import firebase from 'firebase'
+
 export default {
   name: 'HeaderMenu',
-  props: ['currentUserUID'],
+  data () {
+    return {
+      currentUserUID: null
+    }
+  },
+  created: function () {
+    const self = this
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        // User is signed in.
+        self.currentUserUID = user.uid
+      }
+    })
+  },
 }
 </script>

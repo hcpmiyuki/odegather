@@ -75,7 +75,6 @@
         
       </div>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
   </div>
 </template>
 
@@ -84,7 +83,6 @@
 <script>
 import {db} from '../plugins/firebase'
 import firebase from 'firebase'
-import HeaderMenu from './HeaderMenu'
 import UserInfoEdit from './UserInfoEdit'
 import axios from 'axios'
 
@@ -123,7 +121,6 @@ export default {
     }
   },
   components: {
-    HeaderMenu,
     UserInfoEdit
   },
   created: async function () {

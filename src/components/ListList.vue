@@ -40,14 +40,12 @@
         @close="showShareModal = false">
       </ShareModal>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
   </div>
 </template>
 
 <script>
 import firebase from 'firebase'
 import {db} from '../plugins/firebase'
-import HeaderMenu from './HeaderMenu'
 import ShareModal from './ShareModal'
 
 export default {
@@ -65,7 +63,6 @@ export default {
     }
   },
   components: {
-    HeaderMenu,
     ShareModal
   },
   created: function () {

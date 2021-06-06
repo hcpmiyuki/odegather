@@ -2,17 +2,17 @@
   <div id="app">
     <!-- <p v-on:click='backPage'> << もどる</p> -->
     <!-- <img src="./assets/logo.png"> -->
+    <HeaderMenu/>
     <router-view/>
   </div>
 </template>
 
 <script>
+import HeaderMenu from './components/HeaderMenu'
 export default {
   name: 'App',
-  methods: {
-    backPage: function () {
-      this.$router.back()
-    }
+  components : {
+    HeaderMenu
   }
 }
 </script>

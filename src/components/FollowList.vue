@@ -22,14 +22,12 @@
       <UserList v-bind:users='follows' msg='フォローしている人がいません' v-if="switchTab == 'follow'"></UserList>
       <UserList v-bind:users='followers' msg='フォロワーがいません' v-else></UserList>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
   </div>
 </template>
 
 <script>
 import firebase from 'firebase'
 import {db} from '../plugins/firebase'
-import HeaderMenu from './HeaderMenu'
 import UserList from './UserList'
 
 export default {
@@ -45,7 +43,6 @@ export default {
     }
   },
   components: {
-    HeaderMenu,
     UserList
   },
   created: async function () {
