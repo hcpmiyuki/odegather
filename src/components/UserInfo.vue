@@ -33,7 +33,7 @@
                 </router-link>
                 フォロワー
               </a>
-              <div id='btn-area'>
+              <!-- <div id='btn-area'>
                 <p v-if="followBtnShow && currentUserUID" class='btn follow' v-on:click='followUser'>フォローする</p>
                 <p v-if="unFollowBtnShow && currentUserUID" class='btn follow' v-on:click='unFollowUser'>フォロー解除</p>
                 <p class='btn list'>
@@ -41,10 +41,24 @@
                   リストを見る
                   </router-link>
                 </p>
-              </div>    
+                <p v-show="ffFlag">
+                  <i class="fas fa-envelope"></i>
+                </p>
+              </div>     -->
             </div>
           </div>
-        
+        <div id='btn-area'>
+            <p v-if="followBtnShow && currentUserUID" class='btn follow' v-on:click='followUser'>フォローする</p>
+            <p v-if="unFollowBtnShow && currentUserUID" class='btn follow' v-on:click='unFollowUser'>フォロー解除</p>
+            <p class='btn list'>
+              <router-link :to="{ name: 'ListList', params: { uid: pageUserData.userID}}">
+                リストを見る
+              </router-link>
+            </p>
+            <p v-show="ffFlag" class='btn list' v-on:click='createChat'>
+              メッセージ<i class="fas fa-envelope"></i>
+            </p>
+        </div> 
         <div id='user-description' v-show="pageUserData.description">
           <p class="description">{{pageUserData.description}}</p>
         </div>
@@ -117,7 +131,8 @@ export default {
       showUserInfoEditModal: false,
       apiUrl:'https://portfolio-310607.uc.r.appspot.com/reccomend-users',
       showRecommendedUsersData: null,
-      userReccomendMsg: null
+      userReccomendMsg: null,
+      ffFlag: false
     }
   },
   components: {
@@ -145,6 +160,9 @@ export default {
       console.log(self.currentUserData.follows)
     } else if (self.pageUID !== self.currentUserUID){
       self.unFollowBtnShow = true
+      if (self.currentUserData.followers.includes(self.pageUID)) {
+        self.ffFlag = true
+      }
     }
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
@@ -307,6 +325,35 @@ export default {
         console.error('ログアウトに失敗')
       })
     },
+    createChat: async function (){
+      const self = this
+      
+      const newChatRef = db.collection('chats').doc();
+      newChatRef.set({
+          members: [self.pageUID, self.currentUserUID],
+          createdAt: new Date()
+      })
+      .then(async function () {
+        const currentUserChatsRef = db.collection('users').doc(self.currentUserUID).collection('chatRefs').doc(newChatRef.id)
+        const pageUserChatsRef = db.collection('users').doc(self.pageUID).collection('chatRefs').doc(newChatRef.id)
+
+        try {
+          const batch = db.batch()
+
+          await batch.set(currentUserChatsRef, {'chat': newChatRef})
+
+          await batch.set(pageUserChatsRef, {'chat': newChatRef})
+
+          await batch.commit()
+        } catch (error) {
+          console.error(error);
+        }
+        self.$router.push({ path: `/chat/${newChatRef.id}` })
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+    },
     randomSelect: function (array, num) {
       const self = this
       let newArray = [];
@@ -350,6 +397,9 @@ export default {
       self.followBtnShow = true
     } else if (self.pageUID !== self.currentUserUID){
       self.unFollowBtnShow = true
+      if (self.currentUserData.followers.includes(self.pageUID)) {
+        self.ffFlag = true
+      }
     }
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
@@ -395,17 +445,20 @@ export default {
   font-size: 21px;
 }
 
-#user-header-info .btn{
-  width: 85px;
+.btn{
   font-size: smaller;
   margin: 5px auto;
 }
 
-#user-header-info #btn-area{
+#btn-area{
   display: flex;
 }
 
-#user-header-info .btn.follow{
+#btn-area p {
+  width: 30%;
+}
+
+.btn.follow{
   background-color: var(--main-color);
   color: var(--sub-color);
 }

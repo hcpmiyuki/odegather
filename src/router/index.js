@@ -7,6 +7,8 @@ import ListList from '@/components/ListList'
 import PlaceList from '@/components/PlaceList'
 import FollowList from '@/components/FollowList'
 import AddingUserList from '@/components/AddingUserList'
+import ChatList from '@/components/ChatList'
+import ChatRoom from '@/components/ChatRoom'
 import firebase from 'firebase'
 
 Vue.use(Router)
@@ -52,20 +54,51 @@ const router = new Router({
       path: '/place/:placeID/users',
       name: 'AddingUserList',
       component: AddingUserList
-    }
+    },
+    {
+      path: '/chats/:uid',
+      name: 'ChatList',
+      component: ChatList,
+      meta: {
+        authNecessary: true
+      }
+    },
+    {
+      path: '/chat/:chatID',
+      name: 'ChatRoom',
+      component: ChatRoom,
+      meta: {
+        authNecessary: true
+      }
+    },
   ]
 })
 
 router.beforeEach((to, from, next) => {
   const authed = to.matched.some(record => record.meta.authed)
+  const authNecessary = to.matched.some(record => record.meta.authNecessary)
+
   if (authed) {
     // 認証状態を取得
     firebase.auth().onAuthStateChanged(function (user) {
       if (!user) {
         next()
       } else {
-        // 認証されていない場合、認証画面へ
         next({ name: 'UserInfo', params: { uid: user.uid}})
+      }
+    })
+  } else {
+    next()
+  }
+
+  if (authNecessary) {
+    // 認証状態を取得
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (!user) {
+        next({ name: 'SignIn'})
+        
+      } else {
+        next()
       }
     })
   } else {
