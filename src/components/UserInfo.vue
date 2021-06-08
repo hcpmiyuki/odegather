@@ -315,11 +315,15 @@ export default {
     },
     logout: function () {
       const self = this
-      firebase.auth().signOut().then(() => {
-        self.$router.push('/')
-      }).catch((error) => {
-        console.error('ログアウトに失敗')
-      })
+      var result = confirm('ログアウトしてよろしいですか？');
+ 
+      if(result) {
+        firebase.auth().signOut().then(() => {
+          self.$router.push('/')
+        }).catch((error) => {
+          console.error('ログアウトに失敗')
+        })
+      }
     },
     createChat: async function (){
       const self = this
