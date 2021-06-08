@@ -79,13 +79,7 @@ export default {
 }
 .title-header h1{
   font-weight:800;
-}
-
-.title-header h1{
   display: inline;
-  font-weight:400;
 }
-
-
 
 </style>

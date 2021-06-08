@@ -31,13 +31,12 @@
         </ul>
         <p v-else>まだメッセージがありません!</p>
       </div>
-
     </div>
     <div class="chat-form">
       <div class="chat-form-content">
         <textarea
         v-model="input"
-        @keydown.enter.exact.prevent="doSend"></textarea>
+        @keydown.enter.exact.prevent="doSend" maxlength='100'></textarea>
         <p v-on:click='doSend' class='send-button btn'>送信</p>
       </div>
     </div>
@@ -195,8 +194,9 @@ export default {
   border-radius: 2px;
   height: 40px;
   width: calc(100% - 6em);
-  resize: none;
   width: 90%;
+  font-size: 16px;
+  padding: 5px;
 }
 
 .send-button {
