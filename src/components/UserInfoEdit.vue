@@ -103,7 +103,7 @@ export default {
           updatedAt: new Date()
         })
         .then(function () {
-          self.$router.go({path: self.$router.currentRoute.path, force: true})
+          window.location.reload()
         })
         .catch((error) => {
           console.error(error);
