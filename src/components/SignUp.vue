@@ -9,6 +9,7 @@
           <input type='password' name='password' v-model='password'>
           <p v-on:click='signUp' class='btn'>サインアップ</p>
           <p>アカウントをお持ちの方は<router-link to="/">こちら</router-link></p>
+          <p style="color: white; margin-top: 30px;">{{ errorMsg }}</p>
       </div>
   </div>
 </template>
@@ -23,13 +24,14 @@ export default {
     return {
       email: null,
       password: null,
-      name: null
+      name: null,
+      errorMsg: ''
     }
   },
   methods: {
     signUp: function () {
       const self = this
-      if (self.name) {
+      if (self.name && self.email && self.password) {
         firebase.auth().createUserWithEmailAndPassword(self.email, self.password)
           .then((res) => {
             db.collection('users').doc(res.user.uid).set({
@@ -43,13 +45,15 @@ export default {
               )
               .catch((error) => {
                 // エラー時の処理
-                console.error(error)
+                self.errorMsg = error
               })
           })
           .catch((error) => {
             // エラー時の処理
-            console.error(error)
+            self.errorMsg = error
           })
+      }else{
+        self.errorMsg = 'ニックネーム, メールアドレス、パスワードを入力してください'
       }
     }
   }
