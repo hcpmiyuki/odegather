@@ -5,10 +5,21 @@
         <!-- <a v-on:click = "back" class='back-btn'><<</a> -->
         <router-link :to="{ name: 'SignIn'}" v-show='!currentUserUID' id='mypage-menu-signin'>サインイン</router-link>
       </div>
-      <div class='list'>
+      <div class='title-header'>
+        <h1>チャット一覧</h1>
+      </div>
+      <div class='list small'>
         <ul v-if='chats.length'>
           <li v-for='(chat, index) in chats' :key='index'>
-						<p class='name'><router-link :to="{ name: 'ChatRoom', params: { chatID: chat.id}}">{{chat.name}} さんとのチャット</router-link></p>
+            <div class='ff-list'>
+              <div class="trim icon">
+                <img :src='chat.imageName'>
+              </div>
+              <div>
+                <p v-if="chat.name != null && chat.name.split('').length > 20"><router-link :to="{ name: 'ChatRoom', params: { chatID: chat.id}}">{{chat.name.split('').slice(0, 20).join('') + '…'}} さんとのチャット</router-link></p>
+                <p v-else><router-link :to="{ name: 'ChatRoom', params: { chatID: chat.id}}">{{chat.name}} さんとのチャット</router-link></p>
+              </div>
+            </div>
           </li>
         </ul>
         <p v-else>まだチャットが作成されていません!</p>
@@ -50,7 +61,8 @@ export default {
 				const personID = chatInfo.data().members.filter(i => i != self.currentUserUID)[0]
 				const personData = await db.collection('users').doc(personID).get()
 				chats.push({
-					'name': personData.data().screenName,
+          'name': personData.data().screenName,
+          'imageName': personData.data().imageName,
 					'id': chatInfo.id
 				})
       })
@@ -62,15 +74,11 @@ export default {
 </script>
 
 <style scoped>
-.title-header h1, .title-header h1 a{
+.title-header h1{
   color: var(--main-color);
 }
-.title-header h1 a {
+.title-header h1{
   font-weight:800;
-}
-
-.list .description{
-  font-size: 12px
 }
 
 .title-header h1{
@@ -78,9 +86,6 @@ export default {
   font-weight:400;
 }
 
-.title-header a{
-  font-size: 32px;
-  padding-left: 15px;
-  color: var(--accent-color);
-}
+
+
 </style>

@@ -91,6 +91,22 @@ body,html{
     color: var(--main-color);
 }
 
+.title-header a{
+    font-size: 32px;
+    padding-left: 15px;
+    color: var(--accent-color);
+}
+  
+.title-header #username a,.title-header #username{
+    font-size: 15px;
+    color: var(--main-color);
+    padding-left: 3px;
+}
+  
+.title-header #username a{
+    font-weight: bolder;
+}
+
 .list .name{
     font-size: 21px;
 }
@@ -102,6 +118,25 @@ body,html{
 .list .btn_area a{
     padding: 0 3px;
     font-size: 16px;
+}
+
+
+.list.small li{
+    padding: 10px 10px 10px 10px;
+    height: 50px;
+}
+  
+.list.small{
+    margin-bottom: 50px;
+}
+  
+.list.small li .description{
+    font-size: 10px;
+}
+
+.ff-list{
+    display: grid;
+    grid-template-columns: 20% 80%;
 }
 
 .description {

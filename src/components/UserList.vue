@@ -53,21 +53,4 @@ export default {
 
 <style scoped>
 
-.ff-list{
-  display: grid;
-  grid-template-columns: 20% 80%;
-}
-
-.list.small li{
-  padding: 10px 10px 10px 10px;
-  height: 50px;
-}
-
-.list.small{
-  margin-bottom: 50px;
-}
-
-.list.small li .description{
-  font-size: 10px;
-}
 </style>
