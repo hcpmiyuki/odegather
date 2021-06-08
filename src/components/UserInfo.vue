@@ -55,7 +55,7 @@
                 リストを見る
               </router-link>
             </p>
-            <p v-show="ffFlag" class='btn list' v-on:click='createChat'>
+            <p v-show="ffFlag" class='btn message' v-on:click='createChat'>
               メッセージ<i class="fas fa-envelope"></i>
             </p>
         </div> 
@@ -132,7 +132,6 @@ export default {
       apiUrl:'https://portfolio-310607.uc.r.appspot.com/reccomend-users',
       showRecommendedUsersData: null,
       userReccomendMsg: null,
-      ffFlag: false
     }
   },
   components: {
@@ -160,9 +159,6 @@ export default {
       console.log(self.currentUserData.follows)
     } else if (self.pageUID !== self.currentUserUID){
       self.unFollowBtnShow = true
-      if (self.currentUserData.followers.includes(self.pageUID)) {
-        self.ffFlag = true
-      }
     }
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
@@ -380,6 +376,16 @@ export default {
       return newArray;
     }
   },
+  computed: {
+    // 算出 getter 関数
+    ffFlag: function () {
+      const self = this
+      if (self.pageUID && self.currentUserData && self.currentUserData.followers.includes(self.pageUID) && self.unFollowBtnShow) {
+        return true
+      }
+      return false
+    }
+  },
   beforeRouteUpdate: async function (to, from, next) {
     const self = this
     self.followBtnShow = false
@@ -406,9 +412,6 @@ export default {
       self.followBtnShow = true
     } else if (self.pageUID !== self.currentUserUID){
       self.unFollowBtnShow = true
-      if (self.currentUserData.followers.includes(self.pageUID)) {
-        self.ffFlag = true
-      }
     }
 
     if (self.pageUID && self.currentUserUID && self.pageUID === self.currentUserUID) {
@@ -419,7 +422,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #user-container{
   color: var(--main-color);
 }
@@ -464,13 +467,13 @@ export default {
 }
 
 #btn-area p {
-  width: 30%;
+  width: 27%;
 }
 
-.btn.follow{
+/* .btn.follow, .btn.message{
   background-color: var(--main-color);
   color: var(--sub-color);
-}
+} */
 
 #user-description{
   padding: 10px 0;
