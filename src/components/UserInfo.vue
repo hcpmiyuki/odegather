@@ -327,6 +327,15 @@ export default {
     },
     createChat: async function (){
       const self = this
+
+      // チャットルームが作成済みでないかを判定する
+      const chatDocs = await db.collection('users').doc(self.currentUserUID).collection('chatRefs').get()
+      chatDocs.forEach(async　function (doc) {
+        if (doc.id === self.pageUID){
+          const chatInfo = await doc.data().chat.get()
+          self.$router.push({ path: `/chat/${chatInfo.id}` })
+        }
+      })
       
       const newChatRef = db.collection('chats').doc();
       newChatRef.set({
@@ -334,8 +343,8 @@ export default {
           createdAt: new Date()
       })
       .then(async function () {
-        const currentUserChatsRef = db.collection('users').doc(self.currentUserUID).collection('chatRefs').doc(newChatRef.id)
-        const pageUserChatsRef = db.collection('users').doc(self.pageUID).collection('chatRefs').doc(newChatRef.id)
+        const currentUserChatsRef = db.collection('users').doc(self.currentUserUID).collection('chatRefs').doc(self.pageUID)
+        const pageUserChatsRef = db.collection('users').doc(self.pageUID).collection('chatRefs').doc(self.currentUserUID)
 
         try {
           const batch = db.batch()

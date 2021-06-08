@@ -9,7 +9,7 @@
         <a id='username'>
           <router-link :to="{ name: 'UserInfo', params: { uid: personID }}">
             {{ usersData[personID].screenName }}
-          </router-link>との
+          </router-link>　さんとの
         </a><br>
 				<h1>チャットルーム</h1>
       </div>
