@@ -10,7 +10,6 @@
       </div>
       <UserList v-bind:users='users' msg='リストに追加している人がいません'></UserList>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show='currentUserUID'></HeaderMenu>
   </div>
 </template>
 
@@ -19,7 +18,6 @@ import firebase from 'firebase'
 import {db} from '../plugins/firebase'
 import {storage} from '../plugins/firebase'
 import UserList from './UserList'
-import HeaderMenu from './HeaderMenu'
 
 export default {
   name: "AddingUserList",
@@ -32,8 +30,7 @@ export default {
     }
   },
   components: {
-    UserList,
-    HeaderMenu
+    UserList
   },
   created: async function () {
     const self = this

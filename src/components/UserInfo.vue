@@ -33,7 +33,7 @@
                 </router-link>
                 フォロワー
               </a>
-              <div id='btn-area'>
+              <!-- <div id='btn-area'>
                 <p v-if="followBtnShow && currentUserUID" class='btn follow' v-on:click='followUser'>フォローする</p>
                 <p v-if="unFollowBtnShow && currentUserUID" class='btn follow' v-on:click='unFollowUser'>フォロー解除</p>
                 <p class='btn list'>
@@ -41,10 +41,24 @@
                   リストを見る
                   </router-link>
                 </p>
-              </div>    
+                <p v-show="ffFlag">
+                  <i class="fas fa-envelope"></i>
+                </p>
+              </div>     -->
             </div>
           </div>
-        
+        <div id='btn-area'>
+            <p v-if="followBtnShow && currentUserUID" class='btn follow' v-on:click='followUser'>フォローする</p>
+            <p v-if="unFollowBtnShow && currentUserUID" class='btn follow' v-on:click='unFollowUser'>フォロー解除</p>
+            <p class='btn list'>
+              <router-link :to="{ name: 'ListList', params: { uid: pageUserData.userID}}">
+                リストを見る
+              </router-link>
+            </p>
+            <p v-show="ffFlag" class='btn message' v-on:click='createChat'>
+              メッセージ<i class="fas fa-envelope"></i>
+            </p>
+        </div> 
         <div id='user-description' v-show="pageUserData.description">
           <p class="description">{{pageUserData.description}}</p>
         </div>
@@ -75,7 +89,6 @@
         
       </div>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show="currentUserUID" ></HeaderMenu>
   </div>
 </template>
 
@@ -84,7 +97,6 @@
 <script>
 import {db} from '../plugins/firebase'
 import firebase from 'firebase'
-import HeaderMenu from './HeaderMenu'
 import UserInfoEdit from './UserInfoEdit'
 import axios from 'axios'
 
@@ -119,11 +131,10 @@ export default {
       showUserInfoEditModal: false,
       apiUrl:'https://portfolio-310607.uc.r.appspot.com/reccomend-users',
       showRecommendedUsersData: null,
-      userReccomendMsg: null
+      userReccomendMsg: null,
     }
   },
   components: {
-    HeaderMenu,
     UserInfoEdit
   },
   created: async function () {
@@ -304,10 +315,59 @@ export default {
     },
     logout: function () {
       const self = this
-      firebase.auth().signOut().then(() => {
-        self.$router.push('/')
-      }).catch((error) => {
-        console.error('ログアウトに失敗')
+      var result = confirm('ログアウトしてよろしいですか？');
+ 
+      if(result) {
+        firebase.auth().signOut().then(() => {
+          self.$router.push('/')
+        }).catch((error) => {
+          console.error('ログアウトに失敗')
+        })
+      }
+    },
+    createChat: async function (){
+      const self = this
+
+      // チャットルームが作成済みでないかを判定する
+      const chatDocs = await db.collection('users').doc(self.currentUserUID).collection('chatRefs').get()
+      let chatPersons = []
+
+      chatDocs.forEach(function (doc) {
+        chatPersons.push(doc.id)
+      })
+
+      if (chatPersons.includes(self.pageUID)) {
+        const chatDoc = await db.collection('users').doc(self.currentUserUID).collection('chatRefs').doc(self.pageUID).get()
+        const chatData = await chatDoc.data().chat.get()
+        self.$router.push({ path: `/chat/${chatData.id}` })
+
+        return;
+      }
+      
+      const newChatRef = db.collection('chats').doc();
+      newChatRef.set({
+        members: [self.pageUID, self.currentUserUID],
+        createdAt: new Date()
+      })
+      .then(async function () {
+        const currentUserChatsRef = db.collection('users').doc(self.currentUserUID).collection('chatRefs').doc(self.pageUID)
+        const pageUserChatsRef = db.collection('users').doc(self.pageUID).collection('chatRefs').doc(self.currentUserUID)
+
+        try {
+          const batch = db.batch()
+
+          await batch.set(currentUserChatsRef, {'chat': newChatRef})
+
+          await batch.set(pageUserChatsRef, {'chat': newChatRef})
+
+          await batch.commit()
+        } catch (error) {
+          console.error(error);
+        }
+        self.$router.push({ path: `/chat/${newChatRef.id}` })
+      })
+      .catch((error) => {
+        console.error(error);
       })
     },
     randomSelect: function (array, num) {
@@ -325,6 +385,16 @@ export default {
       }
       
       return newArray;
+    }
+  },
+  computed: {
+    // 算出 getter 関数
+    ffFlag: function () {
+      const self = this
+      if (self.pageUID && self.currentUserData && self.currentUserData.followers.includes(self.pageUID) && self.unFollowBtnShow) {
+        return true
+      }
+      return false
     }
   },
   beforeRouteUpdate: async function (to, from, next) {
@@ -363,7 +433,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #user-container{
   color: var(--main-color);
 }
@@ -398,20 +468,23 @@ export default {
   font-size: 21px;
 }
 
-#user-header-info .btn{
-  width: 85px;
+.btn{
   font-size: smaller;
   margin: 5px auto;
 }
 
-#user-header-info #btn-area{
+#btn-area{
   display: flex;
 }
 
-#user-header-info .btn.follow{
+#btn-area p {
+  width: 27%;
+}
+
+/* .btn.follow, .btn.message{
   background-color: var(--main-color);
   color: var(--sub-color);
-}
+} */
 
 #user-description{
   padding: 10px 0;

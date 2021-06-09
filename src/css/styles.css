@@ -91,6 +91,22 @@ body,html{
     color: var(--main-color);
 }
 
+.title-header a{
+    font-size: 32px;
+    padding-left: 15px;
+    color: var(--accent-color);
+}
+  
+.title-header #username a,.title-header #username{
+    font-size: 15px;
+    color: var(--main-color);
+    padding-left: 3px;
+}
+  
+.title-header #username a{
+    font-weight: bolder;
+}
+
 .list .name{
     font-size: 21px;
 }
@@ -103,6 +119,49 @@ body,html{
     padding: 0 3px;
     font-size: 16px;
 }
+
+
+.list.small li{
+    padding: 10px 10px 10px 10px;
+    height: 50px;
+}
+  
+.list.small{
+    margin-bottom: 50px;
+}
+  
+.list.small li .description{
+    font-size: 10px;
+}
+
+.ff-list{
+    display: grid;
+    grid-template-columns: 20% 80%;
+}
+
+/* アイコン */
+.trim {
+    position:relative;
+    overflow: hidden;
+    width:80%;
+    margin: 0 auto;
+    border-radius:50%;
+  }
+  
+  .trim:before {
+    content: "";
+    display: block;
+    padding-top: 100%;
+  }
+  .trim img{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    height:100%;
+  }
 
 .description {
     word-break: break-all;
@@ -118,8 +177,7 @@ body,html{
     z-index:999;
     border-top: lightgray solid 1px;
     display: grid;
-    /* grid-template-columns: 25% 25% 25% 25%; */
-    grid-template-columns: 50% 50%;
+    grid-template-columns: 33% 33% 33%;
 }
 
 #menu a,#menu a:visited{

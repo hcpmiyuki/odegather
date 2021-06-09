@@ -9,10 +9,10 @@
                 <div class="trim small">
                   <img :src="userData.imageName">
                 </div>
-                <input type="file" accept="image/*" @change="onFileUpload">
+                <input type="file" accept="image/*" @change="selectedFile">
                 <input type='text' name='placeName' placeholder='ユーザー名' autocomplete='off' v-model='userData.screenName'>
                 <textarea name='description' rows=4 placeholder='自己紹介(最大100字)' maxlength='100' v-model='userData.description'></textarea>
-                <p class='btn' @click='editUserInfo'>登録</p>
+                <p class='btn' @click='onFileUpload'>登録</p>
               </div>
             </div>
           </div>
@@ -35,7 +35,9 @@ export default {
         'screenName': null,
         'imageName': null,
         'description': null,
-      }
+      },
+      filename: null,
+      uploadFile: null
     }
   },
   created: function () {
@@ -46,8 +48,11 @@ export default {
     self.userData.imageName = self.imageName
   },
   methods: {
-    onFileUpload: function (file) {
+    selectedFile: function(file) {
       const self = this
+      // 選択された File の情報を保存しておく
+      file.preventDefault();
+      
       const files = file.target.files || file.dataTransfer.files;
       const fileType = self.getFileType(files[0].name)
 
@@ -58,9 +63,14 @@ export default {
         })
       }
 
-      let filename = `${self.userData.userID}${Date.parse(new Date())}.${fileType}`.replace(/([\s\:\-])/g, '')
-      const storageRef = storage.ref(`userImages/${filename}`)
-      const uploadTask = storageRef.put(files[0])
+      self.uploadFile = files[0];
+      self.filename = `${self.userData.userID}${Date.parse(new Date())}.${fileType}`.replace(/([\s\:\-])/g, '')
+      self.userData.imageName = URL.createObjectURL(self.uploadFile)
+    },
+    onFileUpload: async function () {
+      const self = this
+      const storageRef = storage.ref(`userImages/${self.filename}`)
+      const uploadTask = storageRef.put(self.uploadFile)
       uploadTask.on('state_changed', 
           snapshot => {
             const percentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
@@ -75,6 +85,7 @@ export default {
           () => {
             uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
               self.userData.imageName = downloadURL
+              self.editUserInfo()
             })
           }
         )
@@ -85,8 +96,9 @@ export default {
       if (pos === -1) return '';
       return filename.slice(pos + 1);
     },
-    editUserInfo: function () {
+    editUserInfo: async function () {
       const self = this
+
       if (!self.userData.screenName){
         self.userData.screenName = '名無し'
       }
@@ -96,23 +108,23 @@ export default {
       }
 
       const newUserRef = db.collection('users').doc(self.userData.userID);
-        newUserRef.update({
-          screenName: self.userData.screenName,
-          imageName: self.userData.imageName,
-          description: self.userData.description,
-          updatedAt: new Date()
-        })
-        .then(function () {
-          self.$router.go({path: self.$router.currentRoute.path, force: true})
-        })
-        .catch((error) => {
-          console.error(error);
+      newUserRef.update({
+        screenName: self.userData.screenName,
+        imageName: self.userData.imageName,
+        description: self.userData.description,
+        updatedAt: new Date()
+      })
+      .then(function () {
+        window.location.reload()
+      })
+      .catch((error) => {
+        console.error(error);
       })
     }
   }
 }
 </script>
-<style>
+<style scoped>
 .trim.small{
   width:50%;
 }

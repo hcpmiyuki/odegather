@@ -33,7 +33,10 @@
               </div>
             </div>
             <div class='btn_area'>
-              <a :href='place.url' target="_brank"><i class="fas fa-map-marked-alt"></i></a>
+              <a :href='place.url' target="_brank" v-show="place.url">
+                <i class="fas fa-map-marked-alt" v-if="place.url.includes('maps.google.com')"></i>
+                <i class="fas fa-paperclip" v-else></i>
+              </a>
               <a v-on:click='deletePlace(place.placeID)' v-show='currentUserUID==pageUID'><i class="fas fa-trash-alt"></i></a>
             </div>
           </li>
@@ -53,14 +56,12 @@
         @close="showShareModal = false">
       </ShareModal>
     </div>
-    <HeaderMenu v-bind:currentUserUID='currentUserUID' v-show='currentUserUID'></HeaderMenu>
   </div>
 </template>
 
 <script>
 import firebase from 'firebase'
 import {db} from '../plugins/firebase'
-import HeaderMenu from './HeaderMenu'
 import ShareModal from './ShareModal'
 
 export default {
@@ -91,7 +92,6 @@ export default {
     }
   },
   components: {
-    HeaderMenu,
     ShareModal
   },
   mounted: function () {
