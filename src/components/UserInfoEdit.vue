@@ -12,7 +12,7 @@
                 <input type="file" accept="image/*" @change="selectedFile">
                 <input type='text' name='placeName' placeholder='ユーザー名' autocomplete='off' v-model='userData.screenName'>
                 <textarea name='description' rows=4 placeholder='自己紹介(最大100字)' maxlength='100' v-model='userData.description'></textarea>
-                <p class='btn' @click='editUserInfo'>登録</p>
+                <p class='btn' @click='onFileUpload'>登録</p>
               </div>
             </div>
           </div>
@@ -85,6 +85,7 @@ export default {
           () => {
             uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
               self.userData.imageName = downloadURL
+              self.editUserInfo()
             })
           }
         )
@@ -97,8 +98,6 @@ export default {
     },
     editUserInfo: async function () {
       const self = this
-
-      await self.onFileUpload()
 
       if (!self.userData.screenName){
         self.userData.screenName = '名無し'
